@@ -50,7 +50,7 @@ let testWithType (ty:System.Type) quote =
     let j1 = (getJavascript ast)
     let moduleAst = getAstFromType ty 
     let j2 = getJavascript moduleAst
-    let library = System.IO.File.ReadAllText("fsharp.js")
+    let library = System.IO.File.ReadAllText("fsharp.js") + System.Environment.NewLine + System.IO.File.ReadAllText("tests.js")
     let javascript = (library + System.Environment.NewLine + j2 + System.Environment.NewLine + System.Environment.NewLine + j1)
     print (j2 + j1)
     //print javascript

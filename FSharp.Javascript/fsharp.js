@@ -203,9 +203,6 @@ Array.prototype.get = function () {
     return this[this.position]
 }
 
-var QuotationsTestHelper = {}
-QuotationsTestHelper.emit = function (x) { emit(x); }
-
 var FSharpList = {}
 
 FSharpList.Empty = function () {

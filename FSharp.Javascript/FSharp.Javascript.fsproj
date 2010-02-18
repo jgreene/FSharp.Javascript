@@ -41,8 +41,12 @@
     <Compile Include="ModuleCompiler.fs" />
     <Compile Include="Dom.fs" />
     <Compile Include="Jquery.fs" />
-    <Content Include="fsharp.js" />
-    <Content Include="dom.js" />
+    <Content Include="fsharp.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dom.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Antlr3.Runtime">

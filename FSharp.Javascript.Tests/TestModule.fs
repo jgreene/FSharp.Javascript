@@ -1,7 +1,7 @@
 ﻿module TestModule
 
 let test (quote:Microsoft.FSharp.Quotations.Expr) = 
-    let typ = System.Type.GetType("TestModule, IronJS.Printer.Tests")
+    let typ = System.Type.GetType("TestModule, FSharp.Javascript.Tests")
     QuotationsTestHelper.testWithType typ quote
 
 type first = {

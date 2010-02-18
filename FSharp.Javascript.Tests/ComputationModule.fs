@@ -1,7 +1,7 @@
 ﻿module ComputationModule
 
 let test (quote:Microsoft.FSharp.Quotations.Expr) = 
-    let typ = System.Type.GetType("ComputationModule, IronJS.Printer.Tests")
+    let typ = System.Type.GetType("ComputationModule, FSharp.Javascript.Tests")
     QuotationsTestHelper.testWithType typ quote
 
 //type CompBuilder() =
