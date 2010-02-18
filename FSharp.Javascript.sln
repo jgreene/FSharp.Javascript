@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Javascript", "FSharp.Javascript\FSharp.Javascript.fsproj", "{0A58C3B4-4A3D-4DAD-83F7-25016D5B8E36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JavascriptParser", "JavascriptParser\JavascriptParser.csproj", "{97EC1A08-1BE8-477C-B45C-2ACF12D2EF1E}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Javascript.Tests", "FSharp.Javascript.Tests\FSharp.Javascript.Tests.fsproj", "{7425F8F3-808D-4308-BC97-73A2C87029D3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A58C3B4-4A3D-4DAD-83F7-25016D5B8E36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A58C3B4-4A3D-4DAD-83F7-25016D5B8E36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A58C3B4-4A3D-4DAD-83F7-25016D5B8E36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A58C3B4-4A3D-4DAD-83F7-25016D5B8E36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97EC1A08-1BE8-477C-B45C-2ACF12D2EF1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97EC1A08-1BE8-477C-B45C-2ACF12D2EF1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97EC1A08-1BE8-477C-B45C-2ACF12D2EF1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97EC1A08-1BE8-477C-B45C-2ACF12D2EF1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7425F8F3-808D-4308-BC97-73A2C87029D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7425F8F3-808D-4308-BC97-73A2C87029D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7425F8F3-808D-4308-BC97-73A2C87029D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7425F8F3-808D-4308-BC97-73A2C87029D3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
