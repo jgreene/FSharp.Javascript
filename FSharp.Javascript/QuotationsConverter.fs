@@ -258,7 +258,7 @@ let convertToAst quote =
         | Patterns.TryWith(a,b,c,d,e) -> 
             let tryBody = traverse a
             let withBody = traverse e
-            let catch = Catch(Identifier ("matchValue",false), getReturnForBody withBody)
+            let catch = Catch(Identifier(b.Name, false), getReturnForBody withBody)
             Call(Function(Try(getReturnForBody tryBody, Some(catch), None), [], None), [])
         | Patterns.NewUnionCase(i, h::[]) -> 
             New(getMemberAccess (i.Name, i.DeclaringType), [traverse h], None)
@@ -270,7 +270,7 @@ let convertToAst quote =
         | Patterns.Sequential(l,r) ->
             let left = traverse l
             let right = traverse r
-            left
+            Block([left;right])
 
         | Patterns.Coerce(n,t) ->
             let node = traverse n

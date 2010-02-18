@@ -4,15 +4,6 @@ let test (quote:Microsoft.FSharp.Quotations.Expr) =
     let typ = System.Type.GetType("ComputationModule, FSharp.Javascript.Tests")
     QuotationsTestHelper.testWithType typ quote
 
-//type CompBuilder() =
-//    [<ReflectedDefinition>]
-//    member x.Bind(t,f) = f t
-//    [<ReflectedDefinition>]
-//    member x.Return(y) = y
-//
-//[<ReflectedDefinition>]
-//let comp = new CompBuilder()
-
 type MaybeBuilder() =
     [<ReflectedDefinition>]
     member this.Bind(x, f) =

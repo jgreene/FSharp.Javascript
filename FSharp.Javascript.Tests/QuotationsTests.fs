@@ -190,7 +190,7 @@ type QuotationsTests() =
         test <@ let result = try
                                 failwith "failure"
                              with
-                             | x -> x
+                             | _ -> true
                 emit result @>
 
     [<Test>]
