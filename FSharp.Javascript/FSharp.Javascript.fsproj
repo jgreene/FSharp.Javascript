@@ -41,6 +41,7 @@
     <Compile Include="ModuleCompiler.fs" />
     <Compile Include="Dom.fs" />
     <Compile Include="Jquery.fs" />
+    <Compile Include="Compiler.fs" />
     <Content Include="fsharp.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -51,6 +52,9 @@
   <ItemGroup>
     <Reference Include="Antlr3.Runtime">
       <HintPath>C:\Users\nephesh\Documents\Visual Studio 10\Projects\FSharp.Javascript\Dependencies\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Compiler.CodeDom">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\FSharpPowerPack-1.9.9.9\bin\FSharp.Compiler.CodeDom.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />

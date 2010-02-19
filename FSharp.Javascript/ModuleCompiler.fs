@@ -37,6 +37,7 @@ let getName (m:System.Reflection.MethodInfo) =
 
 let getAstFromType (mo:System.Type) =
     let rec loop (t:Type) acc =
+        //let types = t.GetNestedTypes(System.Reflection.BindingFlags.Public ||| System.Reflection.BindingFlags.NonPublic)
         let childResults = [for ty in t.GetNestedTypes() do yield! loop ty []]
         let quotesAndMethods = [for m in t.GetMethods() do yield 
                                                             (m, Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(m))] 

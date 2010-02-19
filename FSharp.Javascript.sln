@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JavascriptParser", "Javascr
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Javascript.Tests", "FSharp.Javascript.Tests\FSharp.Javascript.Tests.fsproj", "{7425F8F3-808D-4308-BC97-73A2C87029D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSharp.Javascript.Web", "FSharp.Javascript.Web\FSharp.Javascript.Web.csproj", "{2434CF82-D599-4401-8112-AECE3DF84E97}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Javascript.Web.Model", "FSharp.Javascript.Web.Model\FSharp.Javascript.Web.Model.fsproj", "{334DF2FD-C545-448C-9745-2233F378BB67}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +29,14 @@ Global
 		{7425F8F3-808D-4308-BC97-73A2C87029D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7425F8F3-808D-4308-BC97-73A2C87029D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7425F8F3-808D-4308-BC97-73A2C87029D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2434CF82-D599-4401-8112-AECE3DF84E97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2434CF82-D599-4401-8112-AECE3DF84E97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2434CF82-D599-4401-8112-AECE3DF84E97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2434CF82-D599-4401-8112-AECE3DF84E97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{334DF2FD-C545-448C-9745-2233F378BB67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{334DF2FD-C545-448C-9745-2233F378BB67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{334DF2FD-C545-448C-9745-2233F378BB67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{334DF2FD-C545-448C-9745-2233F378BB67}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

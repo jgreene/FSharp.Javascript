@@ -6,8 +6,8 @@ open FSharp.Javascript.Printer
 open ComputationModule
 open QuotationsTestHelper
 open TestModule
-open IronJS.Printer.Dom
-open IronJS.Printer.Jquery
+open FSharp.Javascript.Dom
+open FSharp.Javascript.Jquery
 
 [<TestFixture>]
 type DomTests() =

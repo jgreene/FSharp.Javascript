@@ -1,0 +1,25 @@
+﻿body {
+    color: #EDEDED;
+    font-family:Lucida Sans Unicode, Lucida Grande;
+    background: #3574A6;
+    font-weight: 300;
+    min-height: 650px;
+}
+
+p {
+    font-size: 18px;
+}
+
+.center 
+{
+    width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+h1 
+{
+    font-size: 26px;
+}
+
+.validation-summary-errors { color: Red; }
