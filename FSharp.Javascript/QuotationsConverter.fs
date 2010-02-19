@@ -266,7 +266,7 @@ let convertToAst quote =
             New(getMemberAccess (i.Name, i.DeclaringType), [for a in l do yield traverse a], None)
         | Patterns.UnionCaseTest(expr, info) ->
             let left = traverse expr
-            BinaryOp(MemberAccess("constructor", left), getMemberAccess (info.Name, info.DeclaringType), ExpressionType.Equal) 
+            BinaryOp(MemberAccess("constructor", left), getMemberAccess (info.Name, info.DeclaringType), ExpressionType.Equal)
         | Patterns.Sequential(l,r) ->
             let left = traverse l
             let right = traverse r
