@@ -6,7 +6,7 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
 
-    <p>On this page you may copy your F# code that you wish to convert into javascript.  Please ensure that your F# is declared as a module and that all functions that you wish to be translated are marked with a <%= Html.Encode("[<ReflectedDefinition>]") %> attribute.</p>
+    <p>On this page you can copy your F# code that you wish to convert into javascript.  Please ensure that your F# is declared as a module and that all functions that you wish to be translated are marked with a <%= Html.Encode("[<ReflectedDefinition>]") %> attribute.</p>
 
     <p>Upon submission your javascript will be run in the browser.  You may use the jquery api provided in the FSharp.Javascript project to manipulate the elements on this page.  It is suggested that you use the id of "output" so as not to break the other functionality on this page.</p>
 
@@ -28,7 +28,10 @@
     <script type="text/javascript">
         <%= Model.Javascript %>
 
-        <%= Model.ModuleName %>.init()
+        $(document).ready(function(){
+            <%= Model.ModuleName %>.init()
+        })
+        
     </script>
     <%if(Model.Javascript != ""){ %>
         <p>Here is the output javascript:</p>

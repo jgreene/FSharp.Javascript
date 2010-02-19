@@ -21,6 +21,10 @@ Operators.op_PipeRight = function (tup) {
     return tup.Item1(tup.Item2)
 }
 
+Operators.Ignore = function (value) {
+    return null
+}
+
 
 function MatchFailureException(file, line, character) {
     return { file: file, line: line, character: character };
