@@ -9,6 +9,18 @@ type HomeController() =
     
     member this.Index() =
         let view = new ModuleCompilerView()
+        view.FSharp <- "module ExampleScript
+
+open FSharp.Javascript.Dom
+open FSharp.Javascript.Jquery
+
+[<ReflectedDefinition>]
+let rec factorial n =
+    if n=0 then 1 else n * factorial(n - 1)
+
+[<ReflectedDefinition>]
+let init() = jquery(document).ready(fun x -> let result = factorial 2
+                                             jquery(\"#output\").html(result)) |> ignore"
         base.View(view)
 
     [<ValidateInput(false)>]
@@ -19,8 +31,7 @@ type HomeController() =
         if javascript.IsSome then
             let getModuleName (script:string) =
                 let script = script.Replace("var", "").Trim()
-                let e = script.IndexOf(" ")
-                let moduleName = script.Substring(0, e)
+                let moduleName = script.Substring(0, script.IndexOf(" "))
                 moduleName
 
             view.ModuleName <- getModuleName javascript.Value
