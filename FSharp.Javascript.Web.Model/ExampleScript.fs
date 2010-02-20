@@ -9,4 +9,7 @@ let rec factorial n =
 
 [<ReflectedDefinition>]
 let init() = jquery(document).ready(fun x -> let result = factorial 2
-                                             jquery("#output").html(result)) |> ignore
+                                             jquery("#output").html(result) |> ignore
+                                             
+
+                                             ) |> ignore

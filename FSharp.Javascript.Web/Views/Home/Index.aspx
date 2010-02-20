@@ -13,7 +13,7 @@
     <p>Please note that free standing code that runs when a module is initialized will not be picked up by the compiler.  Instead please write an init() method and this page will call it automatically for you.</p>
 
     <%= Html.ValidationSummary() %>
-    <form action="/home/submit" method="post">
+    <form action="<%= this.ResolveUrl("~/home/submit") %>" method="post">
         <label>Input F# here:</label><br />
         <%= Html.TextAreaFor(a => a.FSharp, new { style="width: 600px; height: 200px;" })%>
         <br />
