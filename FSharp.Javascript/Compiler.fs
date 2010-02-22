@@ -19,8 +19,8 @@ let CompileFSharpString(str, assemblies, output) =
         else (errors, None)
 
 let (++) v1 v2   = Path.Combine(v1, v2)
-let assemblyDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().CodeBase)
-let defaultAsms() =  [|(assemblyDirectory ++ "FSharp.Javascript.dll").Remove(0, 6)|]//Assembly.GetCallingAssembly().GetReferencedAssemblies() |> Array.map (fun x -> x.CodeBase)
+let assemblyDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().CodeBase).Remove(0, 6)
+let defaultAsms() = [|(assemblyDirectory ++ "FSharp.Javascript.dll")|]
 let randomFile directory = directory ++ Path.GetRandomFileName() + ".dll"
 
 type System.CodeDom.Compiler.CodeCompiler with 

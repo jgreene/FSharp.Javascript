@@ -68,6 +68,8 @@
     <Reference Include="System.Web.Mobile" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Global.asax" />
+    <Content Include="TempAssemblies\placeholder.txt" />
     <Content Include="Content\css\site.css" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -75,7 +77,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Global.asax" />
     <Content Include="Scripts\dom.js" />
     <Content Include="Scripts\fsharp.js" />
     <Content Include="Scripts\jquery-1.4.1.js" />
@@ -88,6 +89,7 @@
     </Content>
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="Scripts\jquery-1.3.2.js" />
     <Content Include="Scripts\jquery-1.3.2.min.js" />
@@ -103,17 +105,11 @@
     <Content Include="Scripts\MicrosoftMvcValidation.debug.js" />
     <Content Include="Views\Web.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="TempAssemblies\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\FSharp.Javascript.Web.Model\FSharp.Javascript.Web.Model.fsproj">
       <Project>{334DF2FD-C545-448C-9745-2233F378BB67}</Project>
       <Name>FSharp.Javascript.Web.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FSharp.Javascript\FSharp.Javascript.fsproj">
-      <Project>{0A58C3B4-4A3D-4DAD-83F7-25016D5B8E36}</Project>
-      <Name>FSharp.Javascript</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -134,7 +130,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>58890</DevelopmentServerPort>
+          <DevelopmentServerPort>61059</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>
           </IISUrl>
