@@ -25,6 +25,7 @@ let click() = jquery(document).ready(fun x -> jquery("#output").html("<a id='tem
 [<ReflectedDefinition>]
 let fact() = let result = factorial 2
              print result
+             
 
 [<ReflectedDefinition>]
 let init() = jquery(document).ready(fun x -> click() )

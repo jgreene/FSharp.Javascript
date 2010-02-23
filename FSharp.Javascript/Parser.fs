@@ -209,8 +209,8 @@ let getAst input =
                                                         let assignNode = traverse (getChildSafe node i)
                                                         match assignNode with
                                                         | Assign(l,r) -> Assign((match l with
-                                                                            | Identifier(x,y) -> Identifier(x, false)
-                                                                            | t -> t), r)
+                                                                                    | Identifier(x,y) -> Identifier(x, false)
+                                                                                    | t -> t), r)
                                                         | Identifier(n, isLocal) -> Identifier(n, true)
                                                         | _ -> assignNode] |> List.rev
 

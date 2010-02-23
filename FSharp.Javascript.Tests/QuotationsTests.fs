@@ -197,8 +197,8 @@ type QuotationsTests() =
     member this.``ActivePattern``() =
         test <@ let a = Some("item")
                 let result = match a with
-                            | TestPattern x -> true
-                            | _ -> false
+                                | TestPattern x -> true
+                                | _ -> false
                 emit result @>
 
     [<Test>]
@@ -210,8 +210,8 @@ type QuotationsTests() =
     member this.``Match on Some/None``() =
         test <@ let a:int option = Some(2)
                 let result = match a with
-                            | Some(x) -> x
-                            | None -> 0
+                                | Some(x) -> x
+                                | None -> 0
                 emit result @>
 
     [<Test>]

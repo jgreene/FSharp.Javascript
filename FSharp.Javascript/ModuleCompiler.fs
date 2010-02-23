@@ -54,8 +54,8 @@ let getAstFromType (mo:System.Type) =
                                                                                                     | _ -> x
                                                                                     | _ -> Function(b,args,None)
                                                                         Some(Block([
-                                                                        Assign(MemberAccess(split.[1], MemberAccess(split.[0], Identifier(t.Name, false))), func);
-                                                                        Assign(MemberAccess(split.[0], Identifier(t.Name, false)), Function(Block([]), [], None))
+                                                                                    Assign(MemberAccess(split.[1], MemberAccess(split.[0], Identifier(t.Name, false))), func);
+                                                                                    Assign(MemberAccess(split.[0], Identifier(t.Name, false)), Function(Block([]), [], None))
                                                                         ]))
                                                                     //active pattern support
                                                                     | Function(b,args,name) when m.Name.Contains("|") ->

@@ -49,16 +49,16 @@ let rewriteBlockToSingleStatement node =
     | Block(l) -> 
         let values = [for t in l do yield match t with
                                             | Assign(i,v) -> match i with
-                                                            | Identifier(n,il) -> Some(n,v)
-                                                            | _ -> None
+                                                                | Identifier(n,il) -> Some(n,v)
+                                                                | _ -> None
                                             | _ -> None] |> List.filter(fun x -> x.IsSome) |> List.map(fun x -> x.Value) |> Map.ofList
 
         let result = [for t in l do yield match t with
                                           | New(x,y,z) ->
                                                 let args = [for i in y 
                                                                 do yield match i with
-                                                                        | Identifier(n,il) when values |> Map.containsKey(n) -> (values |> Map.find n)
-                                                                        | _ -> i]
+                                                                            | Identifier(n,il) when values |> Map.containsKey(n) -> (values |> Map.find n)
+                                                                            | _ -> i]
 
                                                 New(x,args,z)
                                           | BinaryOp(left,right, op) ->
@@ -91,12 +91,12 @@ let convertToAst quote =
     let rec traverse node =
         match node with
         | Patterns.Value(x,y) -> match x with
-                        | :? int -> Number(float (x :?> int))
-                        | :? float -> Number(x :?> float)
-                        | :? string -> String(x :?> string, '"')
-                        | :? bool -> Boolean(x :?> bool)
-                        | null -> Null
-                        | _ -> failwith "invalid value match"
+                                    | :? int -> Number(float (x :?> int))
+                                    | :? float -> Number(x :?> float)
+                                    | :? string -> String(x :?> string, '"')
+                                    | :? bool -> Boolean(x :?> bool)
+                                    | null -> Null
+                                    | _ -> failwith "invalid value match"
         | Patterns.Call(exprs, m, args) ->
             match m.Name with
             | n when isBinaryOp n ->
@@ -138,12 +138,12 @@ let convertToAst quote =
                                                                             | _ -> z
                                                             result
                                                          | Patterns.Let(x,y,z) -> match z with
-                                                                        | Patterns.Call(p,i,ar) -> 
-                                                                            if p.IsSome then
-                                                                                Expr.Call(y, i, ar)
-                                                                            else
-                                                                                Expr.Call(i, ar)
-                                                                        | _ -> a
+                                                                                    | Patterns.Call(p,i,ar) -> 
+                                                                                        if p.IsSome then
+                                                                                            Expr.Call(y, i, ar)
+                                                                                        else
+                                                                                            Expr.Call(i, ar)
+                                                                                    | _ -> a
                                                          | _ -> a]
 
                                                             

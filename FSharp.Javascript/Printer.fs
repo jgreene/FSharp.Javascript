@@ -227,7 +227,6 @@ let getJavascript ast =
             let target = traverse t [] 0
             let body = traverse b [] indent
             getIndent + "}"::body@("){" + getLine::target)@("with("::acc)
-        | _ -> failwith "print matching failed"
 
     let result = [for a in ast do yield! ";" + System.Environment.NewLine::(traverse a [] 0)]
     result |> List.rev |> String.concat ""

@@ -17,3 +17,6 @@ type MaybeBuilder() =
 
 [<ReflectedDefinition>]
 let maybe = new MaybeBuilder()
+
+
+let b = 1
