@@ -7,9 +7,24 @@ open FSharp.Javascript.Jquery
 let rec factorial n =
     if n=0 then 1 else n * factorial(n - 1)
 
-[<ReflectedDefinition>]
-let init() = jquery(document).ready(fun x -> let result = factorial 2
-                                             jquery("#output").html(result) |> ignore
-                                             
+type myOptions = {
+    success: System.Object -> unit;
+    dataType: string;
+    url:string;
+}
 
-                                             ) |> ignore
+[<ReflectedDefinition>]
+let print x = jquery("#output").html(x) |> ignore
+
+[<ReflectedDefinition>]
+let ajax() = jquery(document).ready(fun x -> jquery.ajax({ success = (fun x -> jquery("#output").html(x) |> ignore); dataType = "HTML"; url = "/home/index" }))
+
+[<ReflectedDefinition>]
+let click() = jquery(document).ready(fun x -> jquery("#output").html("<a id='tempElement' href='#'>click here</a>").click(fun y -> jquery("#output").html("clicked")))
+
+[<ReflectedDefinition>]
+let fact() = let result = factorial 2
+             print result
+
+[<ReflectedDefinition>]
+let init() = jquery(document).ready(fun x -> click() )

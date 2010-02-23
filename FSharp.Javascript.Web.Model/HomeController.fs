@@ -19,8 +19,14 @@ let rec factorial n =
     if n=0 then 1 else n * factorial(n - 1)
 
 [<ReflectedDefinition>]
-let init() = jquery(document).ready(fun x -> let result = factorial 2
-                                             jquery(\"#output\").html(result)) |> ignore"
+let print x = jquery(\"#output\").html(x) |> ignore
+
+[<ReflectedDefinition>]
+let fact() = let result = factorial 2
+             print result
+
+[<ReflectedDefinition>]
+let init() = jquery(document).ready(fun x -> fact() )"
         base.View(view)
 
     [<ValidateInput(false)>]

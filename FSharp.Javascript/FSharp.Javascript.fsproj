@@ -49,6 +49,7 @@
     <Content Include="dom.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="fsharp-jquery.js" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Antlr3.Runtime">
