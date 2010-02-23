@@ -5,12 +5,12 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{334df2fd-c545-448c-9745-2233f378bb67}</ProjectGuid>
+    <ProjectGuid>{b8d2a6c5-4197-44c7-b2fb-c7d52fa41d20}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>FSharp.Javascript.Web.Model</RootNamespace>
-    <AssemblyName>FSharp.Javascript.Web.Model</AssemblyName>
+    <RootNamespace>FSharp.Javascript.Utilities</RootNamespace>
+    <AssemblyName>FSharp.Javascript.Utilities</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <Name>FSharp.Javascript.Web.Model</Name>
+    <Name>FSharp.Javascript.Utilities</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,7 +20,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\FSharp.Javascript.Web.Model.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\FSharp.Javascript.Utilities.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,34 +29,32 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Release\FSharp.Javascript.Web.Model.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\FSharp.Javascript.Utilities.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="Antlr3.Runtime">
+      <HintPath>..\..\..\..\..\Documents\Visual Studio 10\Projects\FSharp.Javascript\Dependencies\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Compiler.CodeDom, Version=1.9.9.9, Culture=neutral, PublicKeyToken=a19089b1c74d0809" />
     <Reference Include="mscorlib" />
+    <Reference Include="FSharp.Core" />
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Abstractions" />
-    <Reference Include="System.Web.Mvc, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
-    <Reference Include="System.Web.Routing" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ModuleCompilerView.fs" />
-    <Compile Include="HomeController.fs" />
-    <Compile Include="ExampleScript.fs" />
+    <Compile Include="Compiler.fs" />
+    <Compile Include="Parser.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FSharp.Javascript.Utilities\FSharp.Javascript.Utilities.fsproj">
-      <Name>FSharp.Javascript.Utilities</Name>
-      <Project>{b8d2a6c5-4197-44c7-b2fb-c7d52fa41d20}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\FSharp.Javascript\FSharp.Javascript.fsproj">
       <Name>FSharp.Javascript</Name>
       <Project>{0a58c3b4-4a3d-4dad-83f7-25016d5b8e36}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\JavascriptParser\JavascriptParser.csproj">
+      <Name>JavascriptParser</Name>
+      <Project>{97ec1a08-1be8-477c-b45c-2acf12d2ef1e}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

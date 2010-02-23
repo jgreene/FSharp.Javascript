@@ -82,6 +82,11 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FSharp.Javascript.Utilities\FSharp.Javascript.Utilities.fsproj">
+      <Name>FSharp.Javascript.Utilities</Name>
+      <Project>{b8d2a6c5-4197-44c7-b2fb-c7d52fa41d20}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\FSharp.Javascript\FSharp.Javascript.fsproj">
       <Name>FSharp.Javascript</Name>
       <Project>{0a58c3b4-4a3d-4dad-83f7-25016d5b8e36}</Project>
