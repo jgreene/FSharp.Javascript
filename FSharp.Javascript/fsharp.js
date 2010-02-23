@@ -1,4 +1,10 @@
-﻿var Operators = {}
+﻿function isInt(x) {
+    var y = parseInt(x);
+    if (isNaN(y)) return false;
+    return x == y && x.toString() == y.toString();
+}
+
+var Operators = {}
 
 function Raise(exception) {
     throw exception;

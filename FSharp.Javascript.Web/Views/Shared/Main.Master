@@ -11,6 +11,7 @@
     <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/jquery-1.4.1.js") %>"></script>
     <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/fsharp.js") %>"></script>
     <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/dom.js") %>"></script>
+    <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/fsharp-jquery.js") %>"></script>
 </head>
 <body>
     

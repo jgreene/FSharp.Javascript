@@ -1,0 +1,1 @@
+﻿jQuery.fn.value = jQuery.fn.val

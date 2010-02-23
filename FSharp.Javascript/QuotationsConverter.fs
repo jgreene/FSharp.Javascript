@@ -39,9 +39,19 @@ let getFunction func =
 let isBinaryOp op =
     (getOperator op).IsSome
 
-let getReturnForBody body =
+let rewriteBody body =
+    //take any blocks that are direct children to this block and turn it into a single block
+                                    
     match body with
-    | Block(h::t) -> Block(Return(h)::t)
+    | Block(children) -> 
+        let resultBlock = Block([for b in children do yield! match b with
+                                            | Block(l) -> l
+                                            | _ -> [b]])
+
+        match resultBlock with
+        | Block(h::t) -> 
+            Block(Return(h)::t)
+        | _ -> Return(body)
     | _ -> Return(body)
 
 let rewriteBlockToSingleStatement node =
@@ -168,20 +178,20 @@ let convertToAst quote =
                     call
         | Patterns.IfThenElse(s,b,e) ->
             
-            let els = getReturnForBody (traverse e)
+            let els = rewriteBody (traverse e)
 
             match s with
             | Let(x,y,z) -> 
                 let body = match b with
                             | Let(p,o,i) when p.Name = x.Name && y = o ->
-                                getReturnForBody(traverse i)
-                            | _ -> getReturnForBody (traverse b)
+                                rewriteBody(traverse i)
+                            | _ -> rewriteBody (traverse b)
                 let result = traverse y
                 let statement = traverse z
                 let after = Call(Function(Block([If(statement,body,Some(els), false)]), [], None), [])
                 Block([after;Assign(Identifier(x.Name, true), result)])
             | _ -> 
-                let body = getReturnForBody (traverse b)
+                let body = rewriteBody (traverse b)
                 let statement = traverse s
                 Call(Function(Block([If(statement,body,Some(els), false)]), [], None), [])
                 
@@ -215,7 +225,7 @@ let convertToAst quote =
 
         | Patterns.Lambda(v,x) ->
             let arg = Identifier(cleanName v.Name, false)
-            let body = getReturnForBody (traverse x)
+            let body = rewriteBody (traverse x)
             Function(body, [arg], None)
         | Patterns.Application(l,r) ->
             let left = traverse l
@@ -258,8 +268,8 @@ let convertToAst quote =
         | Patterns.TryWith(a,b,c,d,e) -> 
             let tryBody = traverse a
             let withBody = traverse e
-            let catch = Catch(Identifier(b.Name, false), getReturnForBody withBody)
-            Call(Function(Try(getReturnForBody tryBody, Some(catch), None), [], None), [])
+            let catch = Catch(Identifier(b.Name, false), rewriteBody withBody)
+            Call(Function(Try(rewriteBody tryBody, Some(catch), None), [], None), [])
         | Patterns.NewUnionCase(i, h::[]) -> 
             New(getMemberAccess (i.Name, i.DeclaringType), [traverse h], None)
         | Patterns.NewUnionCase(i, l) -> 
@@ -270,7 +280,7 @@ let convertToAst quote =
         | Patterns.Sequential(l,r) ->
             let left = traverse l
             let right = traverse r
-            Block([left;right])
+            Block([right;left])
 
         | Patterns.Coerce(n,t) ->
             let node = traverse n
@@ -282,6 +292,14 @@ let convertToAst quote =
             let args = [for a in r -> traverse a]
             
             Call(MemberAccess(i.Name, left.Value), args)
+        | Patterns.TypeTest(expr, t) ->
+            let left = traverse expr
+            match t.Name with
+            | "Int32" -> Ast.Call(Identifier("isInt", false), [left])
+            | "Float" -> Ast.Call(Identifier("isFloat", false), [left])
+            | "Double" -> Ast.Call(Identifier("isFloat", false), [left])
+            | "String" -> BinaryOp(TypeOf(left), String("string", '"'), ExpressionType.Equal)
+            | _ -> BinaryOp(MemberAccess("constructor", left), getMemberAccess (t.Name, t.DeclaringType), ExpressionType.Equal)
         
         | ShapeVar v -> Identifier(cleanName v.Name, false)
             

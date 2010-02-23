@@ -301,3 +301,23 @@ type QuotationsTests() =
     member this.``Range with filter``() =
         test <@ let result = seq { 0..10 } |> Seq.filter(fun x -> x > 5) |> Seq.toArray
                 emit(result.[0]) @>
+
+    [<Test>]
+    member this.``Sequential calls order properly``() =
+        test <@ let print (x:int) = ()
+                let fact() = let result = 2
+                             print result
+                             let result2 = 4
+                             result2
+                emit(fact()) @>
+
+    [<Test>]
+    member this.``Type check works properly``() =
+        test <@ let item = ""
+                let checkItem (x:System.Object) =
+                                match x with
+                                | :? string -> true
+                                | :? int -> true
+                                | :? float -> true
+                                | _ -> false
+                emit (checkItem item) @>
