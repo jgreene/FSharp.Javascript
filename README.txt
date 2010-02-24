@@ -1,3 +1,5 @@
+You can play with the converter at http://fscript.justsimplecode.com
+
 To get up and running with FSharp.Javascript
 
 Reference the FSharp.Javascript.dll
