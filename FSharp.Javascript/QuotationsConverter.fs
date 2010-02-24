@@ -158,15 +158,13 @@ let convertToAst quote =
 
                                                             
                 let arguments = [for a in args do yield traverse a] |> List.rev
-                                                                                
-                //potentially remove tuple check? I'm unsure this makes sense anymore
-                let param = m.GetParameters() |> Array.tryFind(fun x -> (cleanName x.Name) = "Tuple")
 
-                let tuple = if arguments.Length > 1 && param.IsSome then Some(New(Identifier("Tuple", false), arguments, None)) else None
+                let tuple = if arguments.Length > 1 && m.DeclaringType.Name.EndsWith("Builder") then Some(New(Identifier("Tuple", false), arguments, None)) else None
                 
                 
                 let name = getFunction m.Name
                 let realName = if name.IsSome then cleanName name.Value else cleanName m.Name
+                
                 if exprs.IsSome then
                     let left = traverse exprs.Value
                     if tuple.IsSome then

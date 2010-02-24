@@ -199,10 +199,10 @@ let getAst input =
 //            
 //            
         | ES3Parser.DecimalLiteral ->
-            if node.Text.Contains(".") then 
-                Number(Some(System.Int32.Parse(node.Text)), None) 
+            if node.Text.Contains(".") || node.Text.Contains("E") then 
+                Number(None, Some(System.Double.Parse(node.Text, System.Globalization.CultureInfo.InvariantCulture)))
             else
-                Number(None, Some(System.Double.Parse(node.Text)))
+                Number(Some(System.Int32.Parse(node.Text, System.Globalization.CultureInfo.InvariantCulture)), None)
         | ES3Parser.StringLiteral ->
             String(node.Text.Substring(1, node.Text.Length - 2), node.Text.[0])
         | ES3Parser.NULL -> Null

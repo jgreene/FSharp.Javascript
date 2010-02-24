@@ -6,7 +6,7 @@ let test (quote:Microsoft.FSharp.Quotations.Expr) =
 
 type MaybeBuilder() =
     [<ReflectedDefinition>]
-    member this.Bind(x, f) =
+    member this.Bind(x,f) =
         match x with
         | Some(t) when t >= 0 && t <= 100 -> f(t)
         | _ -> None

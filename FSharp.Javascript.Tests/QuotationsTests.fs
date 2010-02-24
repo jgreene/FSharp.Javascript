@@ -321,3 +321,10 @@ type QuotationsTests() =
                                 | :? float -> true
                                 | _ -> false
                 emit (checkItem item) @>
+
+    [<Test>]
+    member this.``Call function with tuple argument``() =
+        test <@ let func (x:int,y:int) = x + y
+                let myTup = (1,2)
+                let result = func myTup
+                emit result @>
