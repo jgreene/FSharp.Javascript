@@ -1,5 +1,4 @@
-﻿#light
-namespace FSharp.Javascript.Tests
+﻿namespace FSharp.Javascript.Tests
 
 open NUnit.Framework
 open FSharp.Javascript.Printer

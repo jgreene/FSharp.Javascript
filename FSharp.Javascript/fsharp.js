@@ -1,10 +1,4 @@
-﻿function isInt(x) {
-    var y = parseInt(x);
-    if (isNaN(y)) return false;
-    return x == y && x.toString() == y.toString();
-}
-
-var Operators = {}
+﻿var Operators = {}
 
 function Raise(exception) {
     throw exception;
@@ -23,8 +17,8 @@ Operators.FailurePattern = function (msg) {
     }
 }
 
-Operators.op_PipeRight = function (tup) {
-    return tup.Item1(tup.Item2)
+Operators.op_PipeRight = function (item, func) {
+    return func(item)
 }
 
 Operators.Ignore = function (value) {
@@ -98,7 +92,7 @@ Range.prototype.read = function () {
         return false
 }
 
-function Map(source, func) {
+function Map(func, source) {
     this.func = func
     this.source = source
 }
@@ -111,7 +105,7 @@ Map.prototype.read = function () {
     return this.source.read()
 }
 
-function Filter(source, func) {
+function Filter(func, source) {
     this.source = source
     this.func = func
 }
@@ -134,11 +128,11 @@ var SeqModule = {}
 SeqModule.Delay = function (func) {
     return func();
 }
-SeqModule.Map = function (tuple) {
-    return new Map(tuple.Item1, tuple.Item2)
+SeqModule.Map = function (func, item) {
+    return new Map(func, item)
 }
-SeqModule.Filter = function (tuple) {
-    return new Filter(tuple.Item1, tuple.Item2)
+SeqModule.Filter = function (func, item) {
+    return new Filter(func, item)
 }
 
 
@@ -289,9 +283,9 @@ SeqModule.ToList = function (sequence) {
     return list;
 }
 
-Operators.op_Append = function (tup) {
-    var list = tup.Item1
-    var list2 = ListModule.Reverse(tup.Item2)
+Operators.op_Append = function (item1, item2) {
+    var list = item1
+    var list2 = ListModule.Reverse(item2)
     while (list2.read()) {
         var temp = list2.get();
         list = new FSharpList.Cons(list, temp);

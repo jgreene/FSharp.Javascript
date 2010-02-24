@@ -71,7 +71,7 @@ let getJavascript ast =
             let op = getOp o
             "))"::right@("("::" " + op + " "::")"::left)@("(("::acc)
         | Identifier(n,l) -> if l then "var " + n::acc else n::acc
-        | Number(v) -> ")"::(v.ToString())::"("::acc
+        | Number(i,f) -> if i.IsSome then ")"::(i.Value.ToString())::"("::acc else ")"::(sprintf "%f" f.Value)::"("::acc
         | Function(b,args, n) ->
             let body = traverse b [] indent
             let arguments = [for a in args do yield! (traverse a [] 0)] |> String.concat ","

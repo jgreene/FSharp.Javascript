@@ -313,7 +313,7 @@ type QuotationsTests() =
 
     [<Test>]
     member this.``Type check works properly``() =
-        test <@ let item = ""
+        test <@ let item = 0.0
                 let checkItem (x:System.Object) =
                                 match x with
                                 | :? string -> true

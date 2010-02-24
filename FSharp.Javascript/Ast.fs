@@ -8,7 +8,7 @@ type node =
 | AutoProperty of obj * node
 | BinaryOp of node * node * ExpressionType
 | Identifier of string * bool
-| Number of float
+| Number of int option * float option
 | Function of node * node list * string option
 | AssignmentBlock of node list * bool
 | Block of node list

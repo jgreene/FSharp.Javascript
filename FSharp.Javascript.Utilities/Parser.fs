@@ -199,7 +199,10 @@ let getAst input =
 //            
 //            
         | ES3Parser.DecimalLiteral ->
-            Number((System.Double.Parse(node.Text)))
+            if node.Text.Contains(".") then 
+                Number(Some(System.Int32.Parse(node.Text)), None) 
+            else
+                Number(None, Some(System.Double.Parse(node.Text)))
         | ES3Parser.StringLiteral ->
             String(node.Text.Substring(1, node.Text.Length - 2), node.Text.[0])
         | ES3Parser.NULL -> Null
@@ -272,7 +275,7 @@ let getAst input =
     and buildIncDecOp node op =
         match op with
         | ExpressionType.PreIncrementAssign | ExpressionType.PreDecrementAssign ->
-            Assign(traverse (getChildSafe node 0), BinaryOp(traverse (getChildSafe node 0), Number(1.0), if op = ExpressionType.PreIncrementAssign then ExpressionType.Add else ExpressionType.Subtract))
+            Assign(traverse (getChildSafe node 0), BinaryOp(traverse (getChildSafe node 0), Number(Some(1), None), if op = ExpressionType.PreIncrementAssign then ExpressionType.Add else ExpressionType.Subtract))
         | ExpressionType.PostIncrementAssign -> PostfixOperator(traverse (getChildSafe node 0), ExpressionType.PostIncrementAssign)
         | ExpressionType.PostDecrementAssign -> PostfixOperator(traverse (getChildSafe node 0), ExpressionType.PostDecrementAssign)
         | _ -> failwith "invalid inc dec op"

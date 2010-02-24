@@ -19,4 +19,8 @@ type MaybeBuilder() =
 let maybe = new MaybeBuilder()
 
 
-let b = 1
+[<ReflectedDefinition>]
+let print() = System.Console.WriteLine("got here")
+
+[<ReflectedDefinition>]
+print()

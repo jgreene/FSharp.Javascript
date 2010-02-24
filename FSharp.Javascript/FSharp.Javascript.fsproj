@@ -39,6 +39,7 @@
     <Compile Include="Printer.fs" />
     <Compile Include="QuotationsConverter.fs" />
     <Compile Include="ModuleCompiler.fs" />
+    <Compile Include="Converter.fs" />
     <Compile Include="Dom.fs" />
     <Compile Include="Jquery.fs" />
     <Content Include="fsharp.js">

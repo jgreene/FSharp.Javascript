@@ -12,8 +12,8 @@ open Microsoft.FSharp.Reflection
 
 let getDefaultValue (t:PropertyInfo) =
     match t.ReflectedType with
-    | x when x = typeof<int> -> Number(float 0)
-    | x when x = typeof<float> -> Number(float 0)
+    | x when x = typeof<int> -> Number(Some(0), None)
+    | x when x = typeof<float> -> Number(None, Some(float 0))
     | x when x = typeof<string> -> Ast.String("", '"')
     | _ -> Null
 
@@ -38,6 +38,7 @@ let getName (m:System.Reflection.MethodInfo) =
 let getAstFromType (mo:System.Type) =
     let rec loop (t:Type) acc =
         //let types = t.GetNestedTypes(System.Reflection.BindingFlags.Public ||| System.Reflection.BindingFlags.NonPublic)
+        
         let childResults = [for ty in t.GetNestedTypes() do yield! loop ty []]
         let quotesAndMethods = [for m in t.GetMethods() do yield 
                                                             (m, Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(m))] 

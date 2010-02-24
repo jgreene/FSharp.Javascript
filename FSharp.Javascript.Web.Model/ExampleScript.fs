@@ -20,7 +20,7 @@ let print x = jquery("#output").html(x) |> ignore
 let ajax() = jquery(document).ready(fun x -> jquery.ajax({ success = (fun x -> jquery("#output").html(x) |> ignore); dataType = "HTML"; url = "/home/index" }))
 
 [<ReflectedDefinition>]
-let click() = jquery(document).ready(fun x -> jquery("#output").html("<a id='tempElement' href='#'>click here</a>").click(fun y -> jquery("#output").html("clicked")))
+let click() = jquery(document).ready(fun x -> jquery("#output").html("<a id='tempElement' href='#'>click here</a>").bind("click", fun y -> jquery("#output").html("clicked")))
 
 [<ReflectedDefinition>]
 let fact() = let result = factorial 2

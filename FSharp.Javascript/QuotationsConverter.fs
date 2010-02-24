@@ -82,7 +82,7 @@ let rewriteBlockToSingleStatement node =
         result |> List.head
     | _ -> node
 
-let cleanName (n:string) = n.Replace("|", "").Replace("`1", "").Replace("`2", "").Replace("@", "")
+let cleanName (n:string) = if n = null then "" else n.Replace("|", "").Replace("`1", "").Replace("`2", "").Replace("@", "")
 
 let getMemberAccess (name:string, t:System.Type) =
     let rec loop (typ:System.Type) =
@@ -101,8 +101,8 @@ let convertToAst quote =
     let rec traverse node =
         match node with
         | Patterns.Value(x,y) -> match x with
-                                    | :? int -> Number(float (x :?> int))
-                                    | :? float -> Number(x :?> float)
+                                    | :? int -> Number(Some(x :?> int), None)
+                                    | :? float -> Number(None, Some(x :?> float))
                                     | :? string -> String(x :?> string, '"')
                                     | :? bool -> Boolean(x :?> bool)
                                     | null -> Null
@@ -157,12 +157,14 @@ let convertToAst quote =
                                                          | _ -> a]
 
                                                             
-                let arguments = [for a in args do yield traverse a]
+                let arguments = [for a in args do yield traverse a] |> List.rev
                                                                                 
-                                                            
+                //potentially remove tuple check? I'm unsure this makes sense anymore
+                let param = m.GetParameters() |> Array.tryFind(fun x -> (cleanName x.Name) = "Tuple")
 
-                let tuple = if arguments.Length > 1 then Some(New(Identifier("Tuple", false), arguments, None)) else None
-                            
+                let tuple = if arguments.Length > 1 && param.IsSome then Some(New(Identifier("Tuple", false), arguments, None)) else None
+                
+                
                 let name = getFunction m.Name
                 let realName = if name.IsSome then cleanName name.Value else cleanName m.Name
                 if exprs.IsSome then
@@ -175,6 +177,7 @@ let convertToAst quote =
                     let node = getMemberAccess (m.Name, m.DeclaringType)
 
                     let call = if tuple.IsSome then Call(node, [tuple.Value]) else Call(node, arguments)
+                    //let call = Call(node, arguments)
                     call
         | Patterns.IfThenElse(s,b,e) ->
             
@@ -294,10 +297,9 @@ let convertToAst quote =
             Call(MemberAccess(i.Name, left.Value), args)
         | Patterns.TypeTest(expr, t) ->
             let left = traverse expr
+
             match t.Name with
-            | "Int32" -> Ast.Call(Identifier("isInt", false), [left])
-            | "Float" -> Ast.Call(Identifier("isFloat", false), [left])
-            | "Double" -> Ast.Call(Identifier("isFloat", false), [left])
+            | "Int32" | "Double" -> BinaryOp(TypeOf(left), String("number", '"'), ExpressionType.Equal)
             | "String" -> BinaryOp(TypeOf(left), String("string", '"'), ExpressionType.Equal)
             | _ -> BinaryOp(MemberAccess("constructor", left), getMemberAccess (t.Name, t.DeclaringType), ExpressionType.Equal)
         
