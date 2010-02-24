@@ -36,26 +36,6 @@ function Tuple() {
     }
 }
 
-Tuple.prototype.toString = function () {
-    var a = '('
-    var hasItem = false;
-    for (var p in this) {
-        if (p.substring(0, 4) == "Item") {
-            a += this[p]
-            a += ','
-            hasItem = true
-        }
-
-    }
-
-    if (!hasItem) return null
-
-    a = a.slice(0, a.length - 1)
-
-    a += ')'
-    return a;
-}
-
 Operators.Fst = function (tup) { return tup.Item1; }
 Operators.Snd = function (tup) { return tup.Item2; }
 

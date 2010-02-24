@@ -31,3 +31,8 @@ func()
 This is because the F# quotations system does not support this feature.
 
 Also remember that all function definitions that you want to convert must be decorated with the [<ReflectedDefinition>] attribute.
+
+
+You can also use jquery with
+
+open FSharp.Javascript.Jquery
