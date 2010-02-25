@@ -48,5 +48,13 @@ let (|TestPattern|_|) input =
     | _ -> None
 
 [<ReflectedDefinition>]
+let (|NullCheckPattern|_|) x =
+    match x with
+    | null -> None
+    | _ -> Some(x)
+
+[<ReflectedDefinition>]
 let unitResult (x:int) = ()
+
+
 

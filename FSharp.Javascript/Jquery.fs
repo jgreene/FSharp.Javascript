@@ -137,6 +137,7 @@ type jquery(x:System.Object) =
     member this.hide(x,y) = new jquery(null)
     member this.hover(x) = new jquery(null)
     member this.hover(x,y) = new jquery(null)
+    member this.html() = ""
     member this.html(x) = new jquery(null)
     member this.index() = 0
     member this.index(x) = 0

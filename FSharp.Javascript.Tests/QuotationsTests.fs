@@ -328,3 +328,11 @@ type QuotationsTests() =
                 let myTup = (1,2)
                 let result = func myTup
                 emit result @>
+
+    [<Test>]
+    member this.``NullCheckPattern``() =
+        test <@ let value = "a string"
+                let result = match value with
+                             | NullCheckPattern(x) -> "Was not null"
+                             | _ -> "Was null"
+                emit result @>

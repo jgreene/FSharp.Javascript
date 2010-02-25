@@ -1,1 +1,4 @@
-﻿jQuery.fn.value = jQuery.fn.val
+﻿var Jquery = {}
+Jquery.jquery = window.jQuery
+
+jQuery.fn.value = jQuery.fn.val

@@ -300,7 +300,10 @@ let convertToAst quote =
             | "Int32" | "Double" -> BinaryOp(TypeOf(left), String("number", '"'), ExpressionType.Equal)
             | "String" -> BinaryOp(TypeOf(left), String("string", '"'), ExpressionType.Equal)
             | _ -> BinaryOp(MemberAccess("constructor", left), getMemberAccess (t.Name, t.DeclaringType), ExpressionType.Equal)
-        
+        | Patterns.DefaultValue(x) ->
+            match x with
+            | _ when x.FullName = "null" -> Null
+            | _ -> Number(Some(0), None)
         | ShapeVar v -> Identifier(cleanName v.Name, false)
             
         | _ -> failwith "quotation conversion failure"
