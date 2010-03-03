@@ -338,10 +338,28 @@ type QuotationsTests() =
                 emit result @>
 
     [<Test>]
-    member this.``Type check on base class works properly``() =
+    member this.``Type check on base class``() =
         test <@ let value = new class2("my name", 1) :> System.Object
                 let result = match value with
                                 | :? class1 -> true
+                                | _ -> false
+                                
+                emit result  @>
+
+    [<Test>]
+    member this.``Type check on same class``() =
+        test <@ let value = new class2("my name", 1) :> System.Object
+                let result = match value with
+                                | :? class2 -> true
+                                | _ -> false
+                                
+                emit result  @>
+
+    [<Test>]
+    member this.``Type check on union``() =
+        test <@ let value = First(1) :> System.Object
+                let result = match value with
+                                | :? union -> true
                                 | _ -> false
                                 
                 emit result  @>

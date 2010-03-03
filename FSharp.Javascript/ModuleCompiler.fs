@@ -34,6 +34,15 @@ let getName (m:System.Reflection.MethodInfo) =
 
     (loop m.DeclaringType (m.Name::[])) |> String.concat "."
 
+let getBaseType (startingType:System.Type) =
+                let rec innerGet (typ:System.Type) = 
+                    if typ.BaseType = null || typ.BaseType.Name = "Object"
+                    then typ
+                    else
+                        innerGet typ.BaseType
+
+                innerGet startingType
+
 
 let getAstFromType (mo:System.Type) =
     let rec loop (t:Type) acc =
@@ -82,8 +91,19 @@ let getAstFromType (mo:System.Type) =
 
             let func = [for (r,parameters) in rd do yield 
                                                         let values = [for p in parameters do yield (Identifier(p.Name, false), Assign(MemberAccess(camelCase(p.Name), Identifier("this", false)), Identifier(p.Name,false)))] in
-                                                        Assign(MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType)), 
-                                                        Function(Block( [for (par,prop) in values do yield prop]), [for (par,prop) in values do yield par], None))]
+                                                        
+                                                        Block([Assign(MemberAccess("prototype", MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType))), 
+                                                                        MemberAccess("prototype", getMemberAccess(t.Name, t.DeclaringType)));
+                                                                Assign(MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType)), 
+                                                                Function(Block( [for (par,prop) in values do yield prop]), [for (par,prop) in values do yield par], None))
+                                                               ])]
+
+            
+            
+            let baseType = getBaseType t
+            let inherits = if baseType = t then [] else [Assign(MemberAccess("prototype", getMemberAccess (t.Name, t.DeclaringType)), MemberAccess("prototype", getMemberAccess (baseType.Name, t.DeclaringType)))]
+
+
             Assign(getMemberAccess (t.Name, t.DeclaringType), Function(Block([]), [], None))::func
         else
             let properties = t.GetProperties() |> Array.toList
@@ -104,15 +124,6 @@ let getAstFromType (mo:System.Type) =
 
 
             let func = Assign(getMemberAccess(t.Name, t.DeclaringType), Function(Block(members),parameters, None))
-
-            let getBaseType (startingType:System.Type) =
-                let rec innerGet (typ:System.Type) = 
-                    if typ.BaseType = null || typ.BaseType.Name = "Object"
-                    then typ
-                    else
-                        innerGet typ.BaseType
-
-                innerGet startingType
 
             let baseType = getBaseType t
             let inherits = if baseType = t then [] else [Assign(MemberAccess("prototype", getMemberAccess (t.Name, t.DeclaringType)), MemberAccess("prototype", getMemberAccess (baseType.Name, t.DeclaringType)))]

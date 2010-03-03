@@ -41,8 +41,6 @@ let isBinaryOp op =
     (getOperator op).IsSome
 
 let rewriteBody body =
-    //take any blocks that are direct children to this block and turn it into a single block
-                                    
     match body with
     | Block(children) -> 
         let rec mashBlocks c =
@@ -51,11 +49,13 @@ let rewriteBody body =
                                     | _ -> [b]]
 
         let resultBlock = Block(mashBlocks children)
+        resultBlock
+    | _ -> body
 
-        match resultBlock with
-        | Block(h::t) -> 
-            Block(Return(h)::t)
-        | _ -> Return(body)
+let rewriteBodyWithReturn body =
+    let result = rewriteBody body
+    match result with
+    | Block(h::t) -> Block(Return(h)::t)
     | _ -> Return(body)
 
 let rewriteBlockToSingleStatement node =
@@ -179,24 +179,23 @@ let convertToAst quote =
                     let node = getMemberAccess (m.Name, m.DeclaringType)
 
                     let call = if tuple.IsSome then Call(node, [tuple.Value]) else Call(node, arguments)
-                    //let call = Call(node, arguments)
                     call
         | Patterns.IfThenElse(s,b,e) ->
             
-            let els = rewriteBody (traverse e)
+            let els = rewriteBodyWithReturn (traverse e)
 
             match s with
             | Let(x,y,z) -> 
                 let body = match b with
                             | Let(p,o,i) when p.Name = x.Name && y = o ->
-                                rewriteBody(traverse i)
-                            | _ -> rewriteBody (traverse b)
+                                rewriteBodyWithReturn(traverse i)
+                            | _ -> rewriteBodyWithReturn (traverse b)
                 let result = traverse y
                 let statement = traverse z
                 let after = Call(Function(Block([If(statement,body,Some(els), false)]), [], None), [])
                 Block([after;Assign(Identifier(x.Name, true), result)])
             | _ -> 
-                let body = rewriteBody (traverse b)
+                let body = rewriteBodyWithReturn (traverse b)
                 let statement = traverse s
                 Call(Function(Block([If(statement,body,Some(els), false)]), [], None), [])
                 
@@ -230,7 +229,7 @@ let convertToAst quote =
 
         | Patterns.Lambda(v,x) ->
             let arg = Identifier(cleanName v.Name, false)
-            let body = rewriteBody (traverse x)
+            let body = rewriteBodyWithReturn (traverse x)
             Function(body, [arg], None)
         | Patterns.Application(l,r) ->
             let left = traverse l
@@ -273,19 +272,15 @@ let convertToAst quote =
         | Patterns.TryWith(a,b,c,d,e) -> 
             let tryBody = traverse a
             let withBody = traverse e
-            let catch = Catch(Identifier(b.Name, false), rewriteBody withBody)
-            Call(Function(Try(rewriteBody tryBody, Some(catch), None), [], None), [])
+            let catch = Catch(Identifier(b.Name, false), rewriteBodyWithReturn withBody)
+            Call(Function(Try(rewriteBodyWithReturn tryBody, Some(catch), None), [], None), [])
         | Patterns.NewUnionCase(i, h::[]) -> 
             New(getMemberAccess (i.Name, i.DeclaringType), [traverse h], None)
         | Patterns.NewUnionCase(i, l) -> 
             New(getMemberAccess (i.Name, i.DeclaringType), [for a in l do yield traverse a], None)
-//        | Patterns.UnionCaseTest(expr, info) ->
-//            let left = traverse expr
-//            BinaryOp(MemberAccess("constructor", left), getMemberAccess (info.Name, info.DeclaringType), ExpressionType.Equal)
         | Patterns.UnionCaseTest(expr, info) ->
             let left = traverse expr
             InstanceOf(left, getMemberAccess (info.Name, info.DeclaringType))
-            //BinaryOp(MemberAccess("constructor", left), getMemberAccess (info.Name, info.DeclaringType), ExpressionType.Equal)
         | Patterns.Sequential(l,r) ->
             let left = traverse l
             let right = traverse r
@@ -319,4 +314,6 @@ let convertToAst quote =
             
         | _ -> failwith "quotation conversion failure"
 
-    [traverse quote]
+    let result = traverse quote
+    
+    [rewriteBody result]
