@@ -336,3 +336,31 @@ type QuotationsTests() =
                              | NullCheckPattern(x) -> "Was not null"
                              | _ -> "Was null"
                 emit result @>
+
+    [<Test>]
+    member this.``Type check on base class works properly``() =
+        test <@ let value = new class2("my name", 1) :> System.Object
+                let result = match value with
+                                | :? class1 -> true
+                                | _ -> false
+                                
+                emit result  @>
+
+    [<Test>]
+    member this.``Equality check on records``() =
+        let v1 = { x = 1; y = 1 }
+        let v2 = { x = 1; y = 1 }
+        let r = v1 = v2
+
+        test <@ let value1 = { x = 1; y = 1 }
+                let value2 = { x = 1; y = 1 }
+                let result = value1 = value2
+                emit result @>
+
+    [<Test>]
+    member this.``Match on record``() =
+        test <@ let value1 = { Prop1 = 1; Prop2 = "neat" }
+                let result = match value1 with
+                                | { Prop1 = 1; Prop2 = "neat" } -> true
+                                | _ -> false
+                emit result @>

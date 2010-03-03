@@ -40,8 +40,8 @@ let getAstFromType (mo:System.Type) =
         //let types = t.GetNestedTypes(System.Reflection.BindingFlags.Public ||| System.Reflection.BindingFlags.NonPublic)
         
         let childResults = [for ty in t.GetNestedTypes() do yield! loop ty []]
-        let quotesAndMethods = [for m in t.GetMethods() do yield 
-                                                            (m, Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(m))] 
+        let quotesAndMethods = [for m in t.GetMethods() ->
+                                                            (m, Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(m))]
                                                             |> List.filter(fun (x,y) -> y.IsSome) |> List.map(fun (x,y) -> (x,y.Value))
 
         if FSharpType.IsModule t then
@@ -102,7 +102,20 @@ let getAstFromType (mo:System.Type) =
 
                                                     )]
 
+
             let func = Assign(getMemberAccess(t.Name, t.DeclaringType), Function(Block(members),parameters, None))
+
+            let getBaseType (startingType:System.Type) =
+                let rec innerGet (typ:System.Type) = 
+                    if typ.BaseType = null || typ.BaseType.Name = "Object"
+                    then typ
+                    else
+                        innerGet typ.BaseType
+
+                innerGet startingType
+
+            let baseType = getBaseType t
+            let inherits = if baseType = t then [] else [Assign(MemberAccess("prototype", getMemberAccess (t.Name, t.DeclaringType)), MemberAccess("prototype", getMemberAccess (baseType.Name, t.DeclaringType)))]
 
             let q = [for (m,q) in quotesAndMethods do yield 
                                                         Assign(MemberAccess(m.Name, MemberAccess("prototype", getMemberAccess (t.Name, t.DeclaringType))), 
@@ -114,7 +127,7 @@ let getAstFromType (mo:System.Type) =
                                                         | _ -> t)
                                                         ]
 
-            (func::acc@q)@childResults
+            (func::acc@inherits@q)@childResults
 
 
     (loop mo []) |> List.rev

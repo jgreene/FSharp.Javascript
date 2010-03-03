@@ -23,6 +23,7 @@ let getOperator op =
     | "op_Concatenate" -> Some ExpressionType.Add
     | "op_Equals"      -> Some ExpressionType.Equal
     | "op_Equality"    -> Some ExpressionType.Equal
+    | "op_Inequality" -> Some ExpressionType.NotEqual
     //| "op_ColonEquals" -> Some ExpressionType.
     | "op_LessThan"    -> Some ExpressionType.LessThan
     | "op_GreaterThan" -> Some ExpressionType.GreaterThan
@@ -44,9 +45,12 @@ let rewriteBody body =
                                     
     match body with
     | Block(children) -> 
-        let resultBlock = Block([for b in children do yield! match b with
-                                            | Block(l) -> l
-                                            | _ -> [b]])
+        let rec mashBlocks c =
+            [for b in c do yield! match b with
+                                    | Block(l) -> mashBlocks l
+                                    | _ -> [b]]
+
+        let resultBlock = Block(mashBlocks children)
 
         match resultBlock with
         | Block(h::t) -> 
@@ -275,9 +279,13 @@ let convertToAst quote =
             New(getMemberAccess (i.Name, i.DeclaringType), [traverse h], None)
         | Patterns.NewUnionCase(i, l) -> 
             New(getMemberAccess (i.Name, i.DeclaringType), [for a in l do yield traverse a], None)
+//        | Patterns.UnionCaseTest(expr, info) ->
+//            let left = traverse expr
+//            BinaryOp(MemberAccess("constructor", left), getMemberAccess (info.Name, info.DeclaringType), ExpressionType.Equal)
         | Patterns.UnionCaseTest(expr, info) ->
             let left = traverse expr
-            BinaryOp(MemberAccess("constructor", left), getMemberAccess (info.Name, info.DeclaringType), ExpressionType.Equal)
+            InstanceOf(left, getMemberAccess (info.Name, info.DeclaringType))
+            //BinaryOp(MemberAccess("constructor", left), getMemberAccess (info.Name, info.DeclaringType), ExpressionType.Equal)
         | Patterns.Sequential(l,r) ->
             let left = traverse l
             let right = traverse r
@@ -299,10 +307,13 @@ let convertToAst quote =
             match t.Name with
             | "Int32" | "Double" -> BinaryOp(TypeOf(left), String("number", '"'), ExpressionType.Equal)
             | "String" -> BinaryOp(TypeOf(left), String("string", '"'), ExpressionType.Equal)
-            | _ -> BinaryOp(MemberAccess("constructor", left), getMemberAccess (t.Name, t.DeclaringType), ExpressionType.Equal)
+            | _ -> InstanceOf(left, getMemberAccess (t.Name, t.DeclaringType))
+            //BinaryOp(MemberAccess("constructor", left), getMemberAccess (t.Name, t.DeclaringType), ExpressionType.Equal)
         | Patterns.DefaultValue(x) ->
             match x with
             | _ when x.FullName = "null" -> Null
+            | _ when x.FullName = "String" -> Null
+            | _ when x.FullName = "Int32" -> Number(Some(0), None)
             | _ -> Number(Some(0), None)
         | ShapeVar v -> Identifier(cleanName v.Name, false)
             

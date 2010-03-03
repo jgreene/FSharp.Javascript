@@ -58,6 +58,6 @@ let testWithType (ty:System.Type) quote =
     let quoteResultString = if quoteResult = null then "null" else quoteResult.ToString().ToLower()
     let javascriptResult = run javascript
 
-    let result = (quoteResultString = javascriptResult.ToLower());
-    if result <> true then do print (quoteResultString + System.Environment.NewLine +  javascriptResult)
+    let result = (quoteResultString = javascriptResult.ToLower())
+    print (quoteResultString + System.Environment.NewLine +  javascriptResult)
     Assert.IsTrue(result)
