@@ -21,8 +21,8 @@ let getOperator op =
     | "op_Subtraction" -> Some ExpressionType.Subtract
     | "op_Multiply"    -> Some ExpressionType.Multiply
     | "op_Concatenate" -> Some ExpressionType.Add
-    | "op_Equals"      -> Some ExpressionType.Equal
-    | "op_Equality"    -> Some ExpressionType.Equal
+//    | "op_Equals"      -> Some ExpressionType.Equal
+//    | "op_Equality"    -> Some ExpressionType.Equal
     | "op_Inequality" -> Some ExpressionType.NotEqual
     //| "op_ColonEquals" -> Some ExpressionType.
     | "op_LessThan"    -> Some ExpressionType.LessThan
@@ -163,7 +163,11 @@ let convertToAst quote =
                                                             
                 let arguments = [for a in args do yield traverse a] |> List.rev
 
-                let tuple = if arguments.Length > 1 && m.DeclaringType.Name.EndsWith("Builder") then Some(New(Identifier("Tuple", false), arguments, None)) else None
+                let isOperator = arguments.Length = 2 && m.Name.StartsWith("op_")
+
+                let tuple = if arguments.Length > 1 && m.DeclaringType.Name.EndsWith("Builder") && isOperator = false then Some(New(Identifier("Tuple", false), arguments, None)) else None
+
+                
                 
                 
                 let name = getFunction m.Name
@@ -178,7 +182,12 @@ let convertToAst quote =
                 else
                     let node = getMemberAccess (m.Name, m.DeclaringType)
 
-                    let call = if tuple.IsSome then Call(node, [tuple.Value]) else Call(node, arguments)
+                    let call = if tuple.IsSome then 
+                                    Call(node, [tuple.Value])
+                               elif isOperator then
+                                    Call(Call(node, [arguments.[0]]), [arguments.[1]])
+                               else
+                                    Call(node, arguments)
                     call
         | Patterns.IfThenElse(s,b,e) ->
             

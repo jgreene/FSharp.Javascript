@@ -43,6 +43,28 @@ let getBaseType (startingType:System.Type) =
 
                 innerGet startingType
 
+let getEqualityFunction (parameters:ParameterInfo array) =
+
+    let initialStatement = Assign(Identifier("result", true), Ast.Boolean(true))
+    let blockStatements = [for p in parameters do yield 
+                                                        Assign(Identifier("result", false), 
+                                                                BinaryOp(Identifier("result", false), 
+                                                                Call(Call(Identifier("Operators.op_Equality", false),
+                                                                [MemberAccess(camelCase(p.Name), Identifier("this", false))]), [MemberAccess(camelCase(p.Name), Identifier("compareTo", false))]), System.Linq.Expressions.ExpressionType.AndAlso))] |> List.rev
+    
+    
+    let statements = match blockStatements with
+                     | [] -> blockStatements
+                     | h::[] -> match h with
+                                | Assign(x,r) -> Return(r)::[]
+                                | _ -> Return(h)::[]
+                     | h::t -> 
+                                Return(Identifier("result", false))::h::t
+
+
+
+    (Function(Block(statements@[initialStatement]), [Identifier("compareTo", false)], None))
+
 
 let getAstFromType (mo:System.Type) =
     let rec loop (t:Type) acc =
@@ -89,14 +111,18 @@ let getAstFromType (mo:System.Type) =
             let rdr = [for c in cases do yield FSharpValue.PreComputeUnionConstructorInfo c]
             let rd = [for r in rdr do yield (r,r.GetParameters())]
 
-            let func = [for (r,parameters) in rd do yield 
+            let func = [for (r,parameters) in rd do yield! 
                                                         let values = [for p in parameters do yield (Identifier(p.Name, false), Assign(MemberAccess(camelCase(p.Name), Identifier("this", false)), Identifier(p.Name,false)))] in
-                                                        
-                                                        Block([Assign(MemberAccess("prototype", MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType))), 
-                                                                        MemberAccess("prototype", getMemberAccess(t.Name, t.DeclaringType)));
-                                                                Assign(MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType)), 
-                                                                Function(Block( [for (par,prop) in values do yield prop]), [for (par,prop) in values do yield par], None))
-                                                               ])]
+                                                        let construct = Assign(MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType)), 
+                                                                                Function(Block( [for (par,prop) in values do yield prop]), [for (par,prop) in values do yield par], None)) in
+
+                                                        let inheritance = Assign(MemberAccess("prototype", MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType))), 
+                                                                                 MemberAccess("prototype", getMemberAccess(t.Name, t.DeclaringType))) in
+
+                                                        let equals = Assign(MemberAccess("Equals", MemberAccess("prototype", MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType)))),
+                                                                            getEqualityFunction parameters) in
+                                                        [equals;inheritance;construct]
+                                                        ]
 
             
             
@@ -104,7 +130,7 @@ let getAstFromType (mo:System.Type) =
             let inherits = if baseType = t then [] else [Assign(MemberAccess("prototype", getMemberAccess (t.Name, t.DeclaringType)), MemberAccess("prototype", getMemberAccess (baseType.Name, t.DeclaringType)))]
 
 
-            Assign(getMemberAccess (t.Name, t.DeclaringType), Function(Block([]), [], None))::func
+            Assign(getMemberAccess (t.Name, t.DeclaringType), Function(Block([]), [], None))::[Block(func)]
         else
             let properties = t.GetProperties() |> Array.toList
             let constructors = t.GetConstructors() |> Array.toList

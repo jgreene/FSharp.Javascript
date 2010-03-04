@@ -1,4 +1,38 @@
-﻿var Operators = {}
+﻿Object.prototype.Equals = function (x) {
+    return this == x
+}
+
+var Operators = {}
+
+Operators.op_Equality = function (one) {
+    return function (two) {
+        if (one == null && two == null)
+            return true
+
+        if (one == null && two != null)
+            return false
+
+        if (one != null) {
+            return one.Equals(two)
+        }
+
+        return false
+    }
+}
+
+
+Operators.op_Append = function (item1) {
+    return function (item2) {
+        var list = item1
+        var list2 = ListModule.Reverse(item2)
+        while (list2.read()) {
+            var temp = list2.get();
+            list = new FSharpList.Cons(list, temp);
+        }
+
+        return list;
+    }
+}
 
 function Raise(exception) {
     throw exception;
@@ -17,8 +51,10 @@ Operators.FailurePattern = function (msg) {
     }
 }
 
-Operators.op_PipeRight = function (item, func) {
-    return func(item)
+Operators.op_PipeRight = function (item) {
+    return function(func){
+        return func(item)
+    }
 }
 
 Operators.Ignore = function (value) {
@@ -263,15 +299,5 @@ SeqModule.ToList = function (sequence) {
     return list;
 }
 
-Operators.op_Append = function (item1, item2) {
-    var list = item1
-    var list2 = ListModule.Reverse(item2)
-    while (list2.read()) {
-        var temp = list2.get();
-        list = new FSharpList.Cons(list, temp);
-    }
-
-    return list;
-}
 
 

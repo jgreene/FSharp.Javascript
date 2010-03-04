@@ -59,5 +59,8 @@ let (|NullCheckPattern|_|) x =
 [<ReflectedDefinition>]
 let unitResult (x:int) = ()
 
+[<ReflectedDefinition>]
+let (><) a b = a = b
+
 
 

@@ -361,7 +361,6 @@ type QuotationsTests() =
                 let result = match value with
                                 | :? union -> true
                                 | _ -> false
-                                
                 emit result  @>
 
     [<Test>]
@@ -372,7 +371,14 @@ type QuotationsTests() =
 
         test <@ let value1 = { x = 1; y = 1 }
                 let value2 = { x = 1; y = 1 }
-                let result = value1 = value2
+                let result = value1 >< value2
+                emit result @>
+
+    [<Test>]
+    member this.``Equality check on unions``() =
+        test <@ let value1 = First(1)
+                let value2 = First(1)
+                let result = value1 >< value2
                 emit result @>
 
     [<Test>]
