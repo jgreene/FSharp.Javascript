@@ -56,7 +56,6 @@ type support() =
 
 type jquery(x:System.Object) =
     inherit System.Collections.Generic.List<HtmlElement>()
-    
     member this.add(x) = new jquery(null)
     member this.addClass(x) = new jquery(null)
     member this.after(x) = new jquery(null)

@@ -29,3 +29,8 @@ type ComputationExpressionTests() =
                     return z
                 }
                 emit result.Value @>
+
+    [<Test>]
+    member this.``State Monad``() =
+        test <@ let list = executeState (addInt 1) []
+                emit ((fst list).[0]) @>

@@ -42,6 +42,24 @@ let run (source:string) =
 
     emitter.ToString();
 
+//let run (source:string) =
+//    let emitter = new StringBuilder()
+//    let astGenerator = new IronJS.Compiler.IjsAstGenerator()
+//    let astNodes = astGenerator.Build(source);
+//    let globalScope = IronJS.Compiler.Ast.GlobalScope.Create(astNodes).Analyze()
+//
+//    let context = new IronJS.IjsContext()
+//    
+//    let func x = emitter.Append(if x <> null then x.ToString() else "null")
+//    let emit = Microsoft.FSharp.Core.FSharpFunc<System.Object,StringBuilder>.ToConverter(func)
+//    context.GlobalScope.Set("emit", emit)
+//
+//    let compiled = globalScope.Compile(context)
+//
+//    let result = compiled.Invoke(context.GlobalClosure)
+//
+//    emitter.ToString();
+
 let testWithType (ty:System.Type) quote =
     let testModule = true
     print quote
@@ -56,6 +74,7 @@ let testWithType (ty:System.Type) quote =
     //print javascript
     let quoteResult = quote.EvalUntyped();
     let quoteResultString = if quoteResult = null then "null" else quoteResult.ToString().ToLower()
+    print quoteResultString
     let javascriptResult = run javascript
 
     let result = (quoteResultString = javascriptResult.ToLower())

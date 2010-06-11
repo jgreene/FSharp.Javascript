@@ -66,11 +66,14 @@
     <Reference Include="IronJS">
       <HintPath>..\Dependencies\IronJS.dll</HintPath>
     </Reference>
+    <Reference Include="IronJS.Tools">
+      <HintPath>..\Dependencies\IronJS.Tools.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Dynamic">
       <HintPath>..\Dependencies\Microsoft.Dynamic.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Scripting">
-      <HintPath>..\Dependencies\Microsoft.Scripting.dll</HintPath>
+    <Reference Include="Microsoft.Scripting.Core">
+      <HintPath>..\Dependencies\Microsoft.Scripting.Core.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />

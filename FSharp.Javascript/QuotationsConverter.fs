@@ -110,6 +110,7 @@ let convertToAst quote =
                                     | :? string -> String(x :?> string, '"')
                                     | :? bool -> Boolean(x :?> bool)
                                     | null -> Null
+                                    //| _ -> Identifier(y.Name, false)
                                     | _ -> failwith "invalid value match"
         | Patterns.Call(exprs, m, args) ->
             match m.Name with
@@ -167,7 +168,7 @@ let convertToAst quote =
 
                 let tuple = if arguments.Length > 1 && m.DeclaringType.Name.EndsWith("Builder") && isOperator = false then Some(New(Identifier("Tuple", false), arguments, None)) else None
 
-                
+                //let parameters = m.GetParameters() |> Array.toList
                 
                 
                 let name = getFunction m.Name

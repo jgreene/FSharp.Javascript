@@ -46,11 +46,15 @@ let getBaseType (startingType:System.Type) =
 let getEqualityFunction (parameters:ParameterInfo array) =
 
     let initialStatement = Assign(Identifier("result", true), Ast.Boolean(true))
-    let blockStatements = [for p in parameters do yield 
-                                                        Assign(Identifier("result", false), 
-                                                                BinaryOp(Identifier("result", false), 
-                                                                Call(Call(Identifier("Operators.op_Equality", false),
-                                                                [MemberAccess(camelCase(p.Name), Identifier("this", false))]), [MemberAccess(camelCase(p.Name), Identifier("compareTo", false))]), System.Linq.Expressions.ExpressionType.AndAlso))] |> List.rev
+    let getBlock (p:ParameterInfo) = Assign(Identifier("result", false), 
+                                        BinaryOp(Identifier("result", false), 
+                                            Call(Call(Identifier("Operators.op_Equality", false),
+                                                [MemberAccess(camelCase(p.Name), Identifier("this", false))]),
+                                                    [MemberAccess(camelCase(p.Name), Identifier("compareTo", false))]), 
+                                                        System.Linq.Expressions.ExpressionType.AndAlso))
+
+
+    let blockStatements = parameters |> Array.map getBlock |> Array.rev |> Array.toList
     
     
     let statements = match blockStatements with
@@ -68,7 +72,9 @@ let getEqualityFunction (parameters:ParameterInfo array) =
 
 let getAstFromType (mo:System.Type) =
     let rec loop (t:Type) acc =
-        //let types = t.GetNestedTypes(System.Reflection.BindingFlags.Public ||| System.Reflection.BindingFlags.NonPublic)
+
+//        let assem = Assembly.GetAssembly(t)
+//        assem.GetReferencedAssemblies() |> Array.tryFind(fun x -> x.Name = "FSharp.Core")
         
         let childResults = [for ty in t.GetNestedTypes() do yield! loop ty []]
         let quotesAndMethods = [for m in t.GetMethods() ->
@@ -76,28 +82,29 @@ let getAstFromType (mo:System.Type) =
                                                             |> List.filter(fun (x,y) -> y.IsSome) |> List.map(fun (x,y) -> (x,y.Value))
 
         if FSharpType.IsModule t then
-            let result = [for (m,q) in quotesAndMethods do yield match ((QuotationsConverter.convertToAst q) |> List.head) with
-                                                                    //extension method support
-                                                                    | Function(b,args,name) when m.Name.Contains(".") ->
-                                                                        let split = m.Name.Split('.')
-                                                                        let func = match b with
-                                                                                    | Return x -> match x with
-                                                                                                    | Function(t,y,z) -> Function(t, args, None)
-                                                                                                    | _ -> x
-                                                                                    | _ -> Function(b,args,None)
-                                                                        Some(Block([
-                                                                                    Assign(MemberAccess(split.[1], MemberAccess(split.[0], Identifier(t.Name, false))), func);
-                                                                                    Assign(MemberAccess(split.[0], Identifier(t.Name, false)), Function(Block([]), [], None))
-                                                                        ]))
-                                                                    //active pattern support
-                                                                    | Function(b,args,name) when m.Name.Contains("|") ->
-                                                                        let name = m.Name.Replace("|", "")
-                                                                        //let arguments = Assign(MemberAccess("constructor", Identifier("this", false)), 
-                                                                        let func = Assign(MemberAccess(name, Identifier(t.Name, false)), Function(b,args,None))
-                                                                        Some(func)
-                                                                    | Function(b,args,name) -> 
-                                                                        Some(Assign(MemberAccess(m.Name, Identifier(t.Name, false)), Function(b,args, None)))
-                                                                    | _ -> None] |> List.filter(fun x -> x.IsSome) |> List.map(fun x-> x.Value)
+            let getResult (m:MethodInfo,q:Quotations.Expr) = match QuotationsConverter.convertToAst q |> List.head with
+                                                            //extension method support
+                                                            | Function(b,args,name) when m.Name.Contains(".") ->
+                                                                let split = m.Name.Split('.')
+                                                                let func = match b with
+                                                                            | Return x -> match x with
+                                                                                            | Function(t,y,z) -> Function(t, args, None)
+                                                                                            | _ -> x
+                                                                            | _ -> Function(b,args,None)
+                                                                Some(Block([
+                                                                            Assign(MemberAccess(split.[1], MemberAccess(split.[0], Identifier(t.Name, false))), func);
+                                                                            Assign(MemberAccess(split.[0], Identifier(t.Name, false)), Function(Block([]), [], None))
+                                                                ]))
+                                                            //active pattern support
+                                                            | Function(b,args,name) when m.Name.Contains("|") ->
+                                                                let name = m.Name.Replace("|", "")
+                                                                let func = Assign(MemberAccess(name, Identifier(t.Name, false)), Function(b,args,None))
+                                                                Some(func)
+                                                            | Function(b,args,name) -> 
+                                                                Some(Assign(MemberAccess(m.Name, Identifier(t.Name, false)), Function(b,args, None)))
+                                                            | _ -> None
+            
+            let result = quotesAndMethods |> List.map getResult |> List.filter(fun x -> x.IsSome) |> List.map(fun x-> x.Value)
 
             let props = [for p in t.GetProperties() do yield (p, (Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(p.GetGetMethod())))] 
                                                 |> List.filter(fun (p,x) -> x.IsSome) 
@@ -106,6 +113,7 @@ let getAstFromType (mo:System.Type) =
             
             let d = Assign(Identifier(t.Name, true), New(Null, [], Some([])))
             [d; Block((childResults@Block(result@props)::acc) |> List.rev)]
+
         elif FSharpType.IsUnion t then
             let cases = FSharpType.GetUnionCases t
             let rdr = [for c in cases do yield FSharpValue.PreComputeUnionConstructorInfo c]
@@ -137,7 +145,7 @@ let getAstFromType (mo:System.Type) =
             let construct = if constructors.Length > 0 then Some(constructors.Head) else None
             let parameters = if construct.IsSome then [for p in construct.Value.GetParameters() do yield Identifier(p.Name, false)] else []
 
-            let members = [for p in properties do yield 
+            let members = [for p in properties do yield
                                                     Assign(MemberAccess(p.Name, Identifier("this", false)), 
                                                     let d = [for r in parameters do yield match r with
                                                                                             | Identifier(n,l) when n.ToLower() = p.Name.ToLower() -> Some(Identifier(n,l))

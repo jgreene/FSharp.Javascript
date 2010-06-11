@@ -1,8 +1,4 @@
-﻿Object.prototype.Equals = function (x) {
-    return this == x
-}
-
-var Operators = {}
+﻿var Operators = {}
 
 Operators.op_Equality = function (one) {
     return function (two) {
@@ -12,11 +8,11 @@ Operators.op_Equality = function (one) {
         if (one == null && two != null)
             return false
 
-        if (one != null) {
-            return one.Equals(two)
+        if (one != null && one.Equality != null) {
+            return one.Equality(two)
         }
 
-        return false
+        return one === two;
     }
 }
 

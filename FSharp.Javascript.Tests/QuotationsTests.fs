@@ -128,6 +128,7 @@ type QuotationsTests() =
                         | "one" -> "one"
                         | "two" -> "two"
                         | "something" -> "something"
+                        | _ -> "nothing"
                 emit b @>
     
     [<Test>]
