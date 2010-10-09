@@ -25,13 +25,15 @@ let print input =
 //[<ReflectedDefinition>]
 let emit x = x
 
-let run (source:string) =
-//    let emitter = new StringBuilder()
-//    let func x = emitter.Append(x.ToString())
-//    let emit = Microsoft.FSharp.Core.FSharpFunc<System.Object,StringBuilder>.ToConverter(func)
+type mydel = delegate of obj -> StringBuilder
 
+let run (source:string) =
+    let emitter = new StringBuilder()
+    let func x = emitter.Append(x.ToString())
+    let testDel = new mydel(func)
     let engine = new JintEngine()
-    engine.Run(source)
+    engine.SetFunction("emit", testDel).Run(source) |> ignore
+    emitter.ToString()
 
 
 //    let emitter = new StringBuilder()
