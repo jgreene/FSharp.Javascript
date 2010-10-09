@@ -110,6 +110,7 @@ let convertToAst quote =
                                     | :? string -> String(x :?> string, '"')
                                     | :? bool -> Boolean(x :?> bool)
                                     | null -> Null
+                                    | :? System.Enum -> Identifier(y.Name + "." + x.ToString(), false)
                                     //| _ -> Identifier(y.Name, false)
                                     | _ -> failwith "invalid value match"
         | Patterns.Call(exprs, m, args) ->

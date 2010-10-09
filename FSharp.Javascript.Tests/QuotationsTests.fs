@@ -11,107 +11,107 @@ type QuotationsTests() =
     
     [<Test>]
     member this.``Addition``() =
-        test <@ emit (1 + 1) @>
+        test <@ (1 + 1) @>
 
     [<Test>]
     member this.``Subtraction``() =
-        test <@ emit(1 - 1) @>
+        test <@ (1 - 1) @>
 
     [<Test>]
     member this.``Multiplication``() =
-        test <@ emit(2 * 2) @>
+        test <@ (2 * 2) @>
 
     [<Test>]
     member this.``Function declaration with call``() =
         test <@ let f x = x + 1
-                emit(f 2) @>
+                (f 2) @>
 
     [<Test>]
     member this.``Multi line function with call``() =
         test <@ let f x =
                     let y = 1
                     x + y
-                emit(f 2) @>
+                (f 2) @>
 
     [<Test>]
     member this.``Function with multiple arguments``() =
         test <@ let f x y = x + y
-                emit(f 1 2) @>
+                (f 1 2) @>
 
     [<Test>]
     member this.``Anonymous function``() =
         test <@ let f (x:unit-> int) = x()
-                emit(f (fun () -> 1 + 1)) @>
+                (f (fun () -> 1 + 1)) @>
 
     [<Test>]
     member this.``Anonymous function with arg``() =
         test <@ let f (x:int->int) = x(1)
-                emit(f (fun x -> x + 1)) @>
+                (f (fun x -> x + 1)) @>
 
 
     [<Test>]
     member this.``Array creation and access``() =
         test <@ let list = [|"one";"two";"three"|]
-                emit(list.[0]) @>
+                (list.[0]) @>
 
     [<Test>]
     member this.``Record declaration and property access``() =
         test <@ let t = { Prop1 = 1; Prop2 = "blah" }
-                emit(t.Prop1) @>
+                (t.Prop1) @>
 
     [<Test>]
     member this.``Record with custom method call``() =
         test <@ let t = { Prop1 = 1; Prop2 = "blah" }
-                emit(t.GetProp1()) @>
+                (t.GetProp1()) @>
 
     [<Test>]
     member this.``Record with custom method call with argument``() =
         test <@ let t = { Prop1 = 1; Prop2 = "blah" }
-                emit(t.GetProp2(" neato")) @>
+                (t.GetProp2(" neato")) @>
 
     [<Test>]
     member this.``Module function that takes record as argument``() =
         test <@ let t = { Prop1 = 1; Prop2 = "blah" }
-                emit(getProp1(t)) @>
+                (getProp1(t)) @>
 
     [<Test>]
     member this.``Module function with one argument``() =
-        test <@ emit(testFunction 1) @>
+        test <@ (testFunction 1) @>
 
     [<Test>]
     member this.``Class inheritance``() =
         test <@ let c = new class2("bob", 1)
-                emit(c.GetName()) @>
+                (c.GetName()) @>
 
     [<Test>]
     member this.``ExtensionMethod``() =
         test <@ let a = 1
-                emit(a.GetValue()) @>
+                (a.GetValue()) @>
 
     [<Test>]
     member this.``ToString``() =
         test <@  let a = 1
-                 emit(a.ToString()) @>
+                 (a.ToString()) @>
 
     [<Test>]
     member this.``ToString on constant``() =
-        test <@ emit((1).ToString()) @>
+        test <@ ((1).ToString()) @>
 
     [<Test>]
     member this.``ToString on string``() =
-        test <@ emit("1".ToString()) @>
+        test <@ ("1".ToString()) @>
 
     [<Test>]
     member this.``Copy record and change property``() =
         test <@ let t = { Prop1 = 1; Prop2 = "test" }
                 let r = { t with Prop2 = "test2" }
-                emit(r.Prop2) @>
+                (r.Prop2) @>
 
     [<Test>]
     member this.``Copy record and change two properties``() =
         test <@ let t = { Prop1 = 1; Prop2 = "test" }
                 let r = { t with Prop2 = "test2"; Prop1 = 2 }
-                emit(r.Prop1) @>
+                (r.Prop1) @>
 
     [<Test>]
     member this.``Pattern Matching``() =
@@ -119,7 +119,7 @@ type QuotationsTests() =
                 let b = match a with
                         | true -> "true"
                         | false -> "false"
-                emit(b) @>
+                (b) @>
 
     [<Test>]
     member this.``Pattern matching multiple``() =
@@ -129,7 +129,7 @@ type QuotationsTests() =
                         | "two" -> "two"
                         | "something" -> "something"
                         | _ -> "nothing"
-                emit b @>
+                b @>
     
     [<Test>]
     member this.``Pattern matching multiple with invalid match``() =
@@ -140,10 +140,10 @@ type QuotationsTests() =
                             | "two" -> "two"
                             | "some" -> "some"
                             | _ -> failwith "no match"
-                    emit b
+                    b
                 with 
-                | Failure ex -> emit ex
-                | _ -> emit "no match" @>
+                | Failure ex ->  ex
+                | _ ->  "no match" @>
 
     [<Test>]
     member this.``Pattern matching on union``() =
@@ -154,7 +154,7 @@ type QuotationsTests() =
                         | Third x -> "third"
                         | First x -> "first"
                         | Fourth(x,y) -> "Fourth"
-                emit(b) @>
+                (b) @>
 
     [<Test>]
     member this.``IfThenElse Statement with body``() =
@@ -166,25 +166,25 @@ type QuotationsTests() =
                                 let b = 1
                                 b
 
-                emit result @>
+                result @>
 
     [<Test>]
     member this.``Function that returns a tuple``() =
         test <@ let func (a:int) = (a,1)
                 let b = func 2
-                emit(fst b) @>
+                (fst b) @>
 
     [<Test>]
     member this.``Call snd on tuple``() =
         test <@ let b = (1,2)
-                emit(snd b) @>
+                (snd b) @>
 
     [<Test>]
     member this.``Function that takes a tuple as argument``() =
         test <@ let tup = (1,2)
                 let func (x,y) = x + y
                 let result = func tup
-                emit(result) @>
+                (result) @>
 
     [<Test>]
     member this.``TryCatch``() =
@@ -192,7 +192,7 @@ type QuotationsTests() =
                                 failwith "failure"
                              with
                              | _ -> true
-                emit result @>
+                result @>
 
     [<Test>]
     member this.``ActivePattern``() =
@@ -200,12 +200,12 @@ type QuotationsTests() =
                 let result = match a with
                                 | TestPattern x -> true
                                 | _ -> false
-                emit result @>
+                result @>
 
     [<Test>]
     member this.``Some/None``() =
         test <@ let a = Some(true)
-                if a.IsSome then emit true else emit false @>
+                if a.IsSome then  true else  false @>
 
     [<Test>]
     member this.``Match on Some/None``() =
@@ -213,12 +213,12 @@ type QuotationsTests() =
                 let result = match a with
                                 | Some(x) -> x
                                 | None -> 0
-                emit result @>
+                result @>
 
     [<Test>]
     member this.``Sequence generator with range, map, and toArray``() =
         test <@ let result = Seq.toArray(seq {for i in 0..10 do yield i.ToString() + "stuff"})
-                emit(result.[0]) @>
+                (result.[0]) @>
 
     [<Test>]
     member this.``Recursive factorial``() =
@@ -226,17 +226,17 @@ type QuotationsTests() =
                     if n=0 then 1 else n * factorial(n - 1)
                 
                 let result = factorial 2
-                emit result @>
+                result @>
 
     [<Test>]
     member this.``List cons``() =
         test <@ let list = 1::[]
-                emit(list.[0]) @>
+                (list.[0]) @>
 
     [<Test>]
     member this.``List initialization``() =
         test <@ let list = [1;2;3]
-                emit(list.[2]) @>
+                (list.[2]) @>
 
     [<Test>]
     member this.``List match``() =
@@ -244,49 +244,49 @@ type QuotationsTests() =
                 let result = match li with
                                 | h::t::[] -> true
                                 | _ -> false
-                emit result @>
+                result @>
 
     [<Test>]
     member this.``List append``() =
         test <@ let l1 = [1;2]
                 let l2 = [3;4]
                 let result = l2@l1
-                emit(result.Length) @>
+                (result.Length) @>
 
     [<Test>]
     member this.``List traversal``() =
         test <@ let list = [1;2;3;4;5]
                 let result = [for i in list -> i + 1]
-                emit(result.Head) @>
+                (result.Head) @>
 
     [<Test>]
     member this.``List reverse``() =
         test <@ let list = [1;2;3;4;5]
                 let result = list |> List.rev
-                emit(result.Head) @>
+                (result.Head) @>
 
     [<Test>]
     member this.``List access works properly``() =
         test <@ let list = [1;2;3;4;5]
                 let result = list.[0] + list.[1]
-                emit(result) @>
+                (result) @>
 
     [<Test>]
     member this.``List traverseal with yield!``() =
         test <@ let list = [1;2;3;4;5]
                 let result = [for i in list do yield! [i;2]]
-                emit(result.Head) @>
+                (result.Head) @>
 
 
     [<Test>]
     member this.``Tuple access``() =
         test <@ let a = (1,2)
-                emit(snd a) @>
+                (snd a) @>
 
     [<Test>]
     member this.``Tuple assign``() =
         test <@ let (a,b) = (1,2)
-                emit(a + b) @>
+                (a + b) @>
 
     [<Test>]
     member this.``Sequence with filter``() =
@@ -296,12 +296,12 @@ type QuotationsTests() =
                                     |> Seq.toArray
 
                 let t = result.[0].ToString() + result.[1].ToString()
-                emit(t) @>
+                (t) @>
 
     [<Test>]
     member this.``Range with filter``() =
         test <@ let result = seq { 0..10 } |> Seq.filter(fun x -> x > 5) |> Seq.toArray
-                emit(result.[0]) @>
+                (result.[0]) @>
 
     [<Test>]
     member this.``Sequential calls order properly``() =
@@ -310,7 +310,7 @@ type QuotationsTests() =
                              print result
                              let result2 = 4
                              result2
-                emit(fact()) @>
+                (fact()) @>
 
     [<Test>]
     member this.``Type check works properly``() =
@@ -321,14 +321,14 @@ type QuotationsTests() =
                                 | :? int -> true
                                 | :? float -> true
                                 | _ -> false
-                emit (checkItem item) @>
+                (checkItem item) @>
 
     [<Test>]
     member this.``Call function with tuple argument``() =
         test <@ let func (x:int,y:int) = x + y
                 let myTup = (1,2)
                 let result = func myTup
-                emit result @>
+                result @>
 
     [<Test>]
     member this.``NullCheckPattern``() =
@@ -336,7 +336,7 @@ type QuotationsTests() =
                 let result = match value with
                              | NullCheckPattern(x) -> "Was not null"
                              | _ -> "Was null"
-                emit result @>
+                result @>
 
     [<Test>]
     member this.``Type check on base class``() =
@@ -345,7 +345,7 @@ type QuotationsTests() =
                                 | :? class1 -> true
                                 | _ -> false
                                 
-                emit result  @>
+                result  @>
 
     [<Test>]
     member this.``Type check on same class``() =
@@ -354,7 +354,7 @@ type QuotationsTests() =
                                 | :? class2 -> true
                                 | _ -> false
                                 
-                emit result  @>
+                result  @>
 
     [<Test>]
     member this.``Type check on union``() =
@@ -362,7 +362,7 @@ type QuotationsTests() =
                 let result = match value with
                                 | :? union -> true
                                 | _ -> false
-                emit result  @>
+                result  @>
 
     [<Test>]
     member this.``Equality check on records``() =
@@ -373,14 +373,14 @@ type QuotationsTests() =
         test <@ let value1 = { x = 1; y = 1 }
                 let value2 = { x = 1; y = 1 }
                 let result = value1 >< value2
-                emit result @>
+                result @>
 
     [<Test>]
     member this.``Equality check on unions``() =
         test <@ let value1 = First(1)
                 let value2 = First(1)
                 let result = value1 >< value2
-                emit result @>
+                result @>
 
     [<Test>]
     member this.``Match on record``() =
@@ -388,4 +388,4 @@ type QuotationsTests() =
                 let result = match value1 with
                                 | { Prop1 = 1; Prop2 = "neat" } -> true
                                 | _ -> false
-                emit result @>
+                result @>

@@ -63,11 +63,8 @@
     <Reference Include="FSharp.PowerPack.Linq">
       <HintPath>..\Dependencies\FSharp.PowerPack.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="IronJS">
-      <HintPath>..\Dependencies\IronJS.dll</HintPath>
-    </Reference>
-    <Reference Include="IronJS.Tools">
-      <HintPath>..\Dependencies\IronJS.Tools.dll</HintPath>
+    <Reference Include="Jint">
+      <HintPath>..\Dependencies\Jint.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Dynamic">
       <HintPath>..\Dependencies\Microsoft.Dynamic.dll</HintPath>

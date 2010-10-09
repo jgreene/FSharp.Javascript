@@ -15,6 +15,8 @@ open Microsoft.FSharp.Quotations.DerivedPatterns
 open Microsoft.FSharp.Linq
 open Microsoft.FSharp.Linq.QuotationEvaluation
 
+open Jint
+
 open System.Linq
 
 let print input =
@@ -24,23 +26,31 @@ let print input =
 let emit x = x
 
 let run (source:string) =
-    let emitter = new StringBuilder()
-    let context = new IronJS.Runtime.Context()
-    let astBuilder = new IronJS.Compiler.AstGenerator()
-    let etGenerator = new IronJS.Compiler.EtGenerator()
+//    let emitter = new StringBuilder()
+//    let func x = emitter.Append(x.ToString())
+//    let emit = Microsoft.FSharp.Core.FSharpFunc<System.Object,StringBuilder>.ToConverter(func)
 
-    let scope = IronJS.Runtime.Js.Scope.CreateGlobal(context)
-    let func x = emitter.Append(IronJS.Runtime.Utils.JsTypeConverter.ToString(x))
-    let emit = Microsoft.FSharp.Core.FSharpFunc<System.Object,StringBuilder>.ToConverter(func)
-    scope.Global("emit", emit) |> ignore
+    let engine = new JintEngine()
+    engine.Run(source)
 
-    context.SetupGlobals(scope)
-    let astNodes = astBuilder.Build(source)
-    let compiled = etGenerator.Build(astNodes, context)
 
-    compiled.Invoke(scope)
-
-    emitter.ToString();
+//    let emitter = new StringBuilder()
+//    let context = new IronJS.Runtime.Context()
+//    let astBuilder = new IronJS.Compiler.AstGenerator()
+//    let etGenerator = new IronJS.Compiler.EtGenerator()
+//
+//    let scope = IronJS.Runtime.Js.Scope.CreateGlobal(context)
+//    let func x = emitter.Append(IronJS.Runtime.Utils.JsTypeConverter.ToString(x))
+//    let emit = Microsoft.FSharp.Core.FSharpFunc<System.Object,StringBuilder>.ToConverter(func)
+//    scope.Global("emit", emit) |> ignore
+//
+//    context.SetupGlobals(scope)
+//    let astNodes = astBuilder.Build(source)
+//    let compiled = etGenerator.Build(astNodes, context)
+//
+//    compiled.Invoke(scope)
+//
+//    emitter.ToString();
 
 //let run (source:string) =
 //    let emitter = new StringBuilder()
@@ -63,8 +73,10 @@ let run (source:string) =
 let testWithType (ty:System.Type) quote =
     let testModule = true
     print quote
+    print "--------------------------------------------------------------"
     let ast = convertToAst quote
     print ast
+    print "--------------------------------------------------------------"
     let j1 = (getJavascript ast)
     let moduleAst = getAstFromType ty 
     let j2 = getJavascript moduleAst
@@ -74,9 +86,13 @@ let testWithType (ty:System.Type) quote =
     //print javascript
     let quoteResult = quote.EvalUntyped();
     let quoteResultString = if quoteResult = null then "null" else quoteResult.ToString().ToLower()
-    print quoteResultString
+    print ("F# Result: " + quoteResultString)
     let javascriptResult = run javascript
 
-    let result = (quoteResultString = javascriptResult.ToLower())
-    print (quoteResultString + System.Environment.NewLine +  javascriptResult)
+    let javascriptResult' =  if javascriptResult = null then "null" else javascriptResult.ToString().ToLower()
+
+    let result = (quoteResultString = javascriptResult')
+    
+    print System.Environment.NewLine
+    print ("javascript result: " + javascriptResult')
     Assert.IsTrue(result)
