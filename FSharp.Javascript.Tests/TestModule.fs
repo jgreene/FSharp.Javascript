@@ -73,3 +73,8 @@ let tupledArgs (a,b) (c,d) = a + b + c + d
 
 [<ReflectedDefinition>]
 let mixedTupledArgs a (c,d) = a + c + d
+
+type Color =
+| Red = 1
+| Green = 2
+| Blue = 3

@@ -63,9 +63,6 @@
     <Reference Include="FSharp.PowerPack.Linq">
       <HintPath>..\Dependencies\FSharp.PowerPack.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="Jint">
-      <HintPath>..\Dependencies\Jint.dll</HintPath>
-    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
     <Reference Include="nunit.framework">

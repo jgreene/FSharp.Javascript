@@ -20,8 +20,6 @@ open System.IO
 
 open System.Linq
 
-open Jint
-
 let print input =
     System.Console.WriteLine((sprintf "%A" input))
 
