@@ -15,9 +15,12 @@ open Microsoft.FSharp.Quotations.DerivedPatterns
 open Microsoft.FSharp.Linq
 open Microsoft.FSharp.Linq.QuotationEvaluation
 
-open Jint
+open System.Diagnostics
+open System.IO
 
 open System.Linq
+
+open Jint
 
 let print input =
     System.Console.WriteLine((sprintf "%A" input))
@@ -25,52 +28,33 @@ let print input =
 //[<ReflectedDefinition>]
 let emit x = x
 
-type mydel = delegate of obj -> StringBuilder
-
 let run (source:string) =
-    let emitter = new StringBuilder()
-    let func x = emitter.Append(x.ToString())
-    let testDel = new mydel(func)
-    let engine = new JintEngine()
-    engine.SetFunction("emit", testDel).Run(source) |> ignore
-    emitter.ToString()
+    let filePath = "C:\\Users\\nephesh\\test.js"
+    File.WriteAllText(filePath, source)
 
+    let info = new ProcessStartInfo("C:\\cygwin\\bin\\bash", "--login -i -c \"node test.js\"")
+    info.CreateNoWindow <- false
+    info.UseShellExecute <- true
+    info.WindowStyle <- ProcessWindowStyle.Hidden
 
-//    let emitter = new StringBuilder()
-//    let context = new IronJS.Runtime.Context()
-//    let astBuilder = new IronJS.Compiler.AstGenerator()
-//    let etGenerator = new IronJS.Compiler.EtGenerator()
-//
-//    let scope = IronJS.Runtime.Js.Scope.CreateGlobal(context)
-//    let func x = emitter.Append(IronJS.Runtime.Utils.JsTypeConverter.ToString(x))
-//    let emit = Microsoft.FSharp.Core.FSharpFunc<System.Object,StringBuilder>.ToConverter(func)
-//    scope.Global("emit", emit) |> ignore
-//
-//    context.SetupGlobals(scope)
-//    let astNodes = astBuilder.Build(source)
-//    let compiled = etGenerator.Build(astNodes, context)
-//
-//    compiled.Invoke(scope)
-//
-//    emitter.ToString();
+    use proc = Process.Start(info)
 
+    proc.WaitForExit()
+
+    let testResultPath = "C:\\Users\\nephesh\\testResult.js"
+    let result = File.ReadAllText(testResultPath)
+    File.Delete(testResultPath)
+    result
+
+//type mydel = delegate of obj -> StringBuilder
+//
 //let run (source:string) =
 //    let emitter = new StringBuilder()
-//    let astGenerator = new IronJS.Compiler.IjsAstGenerator()
-//    let astNodes = astGenerator.Build(source);
-//    let globalScope = IronJS.Compiler.Ast.GlobalScope.Create(astNodes).Analyze()
-//
-//    let context = new IronJS.IjsContext()
-//    
-//    let func x = emitter.Append(if x <> null then x.ToString() else "null")
-//    let emit = Microsoft.FSharp.Core.FSharpFunc<System.Object,StringBuilder>.ToConverter(func)
-//    context.GlobalScope.Set("emit", emit)
-//
-//    let compiled = globalScope.Compile(context)
-//
-//    let result = compiled.Invoke(context.GlobalClosure)
-//
-//    emitter.ToString();
+//    let func x = emitter.Append(x.ToString())
+//    let testDel = new mydel(func)
+//    let engine = new JintEngine()
+//    engine.SetFunction("emit", testDel).Run(source) |> ignore
+//    emitter.ToString()
 
 let testWithType (ty:System.Type) quote =
     let testModule = true
@@ -84,7 +68,9 @@ let testWithType (ty:System.Type) quote =
     let j2 = getJavascript moduleAst
     let library = System.IO.File.ReadAllText("fsharp.js") + System.Environment.NewLine + System.IO.File.ReadAllText("tests.js")
     let javascript = (library + System.Environment.NewLine + j2 + System.Environment.NewLine + System.Environment.NewLine + j1)
-    print (j2 + j1)
+    print j2
+    print "--------------------------------------------------------------"
+    print j1
     //print javascript
     let quoteResult = quote.EvalUntyped();
     let quoteResultString = if quoteResult = null then "null" else quoteResult.ToString().ToLower()

@@ -134,16 +134,19 @@ type QuotationsTests() =
     [<Test>]
     member this.``Pattern matching multiple with invalid match``() =
         test <@ let a = "something"
-                try
-                    let b = match a with
-                            | "one" -> "one"
-                            | "two" -> "two"
-                            | "some" -> "some"
-                            | _ -> failwith "no match"
-                    emit b
-                with 
-                | Failure ex ->  ex
-                | _ ->  "no match" @>
+                let result = 
+                    try
+                        let b = match a with
+                                | "one" -> "one"
+                                | "two" -> "two"
+                                | "some" -> "some"
+                                | _ -> failwith "no match"
+                        emit b
+                    with 
+                    | Failure ex ->  ex
+                    | _ ->  "failed match"
+
+                emit result @>
 
     [<Test>]
     member this.``Pattern matching on union``() =
@@ -388,4 +391,26 @@ type QuotationsTests() =
                 let result = match value1 with
                                 | { Prop1 = 1; Prop2 = "neat" } -> true
                                 | _ -> false
+                emit result @>
+
+
+    [<Test>]
+    member this.``Method in module with multiple arguments is not called with tuple``() =
+        test <@ let result = multipleArgs 1 2
+                emit result @>
+
+    [<Test>]
+    member this.``Method in module with tupled arguments is called with tuple``() =
+        test <@ let result = tupledArgs (1,2) (3,4)
+                emit result @>
+
+    [<Test>]
+    member this.``Method in module with tupled arguments and non tupled arguments is called with tuple``() =
+        test <@ let result = mixedTupledArgs 1 (3,4)
+                emit result @>
+
+    [<Test>]
+    member this.``Method on record with multiple arguments is not called with tuple``() =
+        test <@ let record = { Prop1 = 1; Prop2 = "neat" }
+                let result = record.MultipleArgsOnRecord(1,2)
                 emit result @>

@@ -162,35 +162,75 @@ let convertToAst quote =
                                                                                     | _ -> a
                                                          | _ -> a]
 
-                                                            
-                let arguments = [for a in args do yield traverse a] |> List.rev
 
-                let isOperator = arguments.Length = 2 && m.Name.StartsWith("op_")
 
-                let tuple = if arguments.Length > 1 && m.DeclaringType.Name.EndsWith("Builder") && isOperator = false then Some(New(Identifier("Tuple", false), arguments, None)) else None
+                let definition = Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(m)
 
-                //let parameters = m.GetParameters() |> Array.toList
-                
-                
                 let name = getFunction m.Name
                 let realName = if name.IsSome then cleanName name.Value else cleanName m.Name
-                
-                if exprs.IsSome then
-                    let left = traverse exprs.Value
-                    if tuple.IsSome then
-                        Call(MemberAccess(realName, left), [tuple.Value])
-                    else
-                        Call(MemberAccess(realName, left), arguments)
-                else
-                    let node = getMemberAccess (m.Name, m.DeclaringType)
 
-                    let call = if tuple.IsSome then 
-                                    Call(node, [tuple.Value])
-                               elif isOperator then
-                                    Call(Call(node, [arguments.[0]]), [arguments.[1]])
-                               else
-                                    Call(node, arguments)
-                    call
+                let createTuple args' = New(Identifier("Tuple", false), args', None)
+
+                let getArguments (def:Expr option, args':Expr list) : node list =
+                    match def with
+                    | Some expr ->                             
+                        let rec loop exp position acc =
+                            match exp with
+                            | Patterns.Lambda(v,x) when v.Type.Name.Contains("Tuple") -> 
+                                let rec getTuplePositions exp' pos =
+                                    match exp' with
+                                    | Patterns.Let(a, Patterns.TupleGet(b,c), d) -> getTuplePositions d (pos + 1)
+                                    | _ -> pos
+
+                                let lastTuplePosition = (getTuplePositions x position)
+
+                                let arguments = [for pos in { position .. (lastTuplePosition) - 1 } -> traverse (args'.[pos])] |> List.rev
+                                let tuple = createTuple arguments
+                                loop x lastTuplePosition (tuple::acc)
+                            | Patterns.Lambda(v,x) when v.Type.Name = "Unit" || position > (args'.Length - 1) ->
+                                let args = args'
+                                loop x position acc
+
+                            | Patterns.Lambda(v,x) -> 
+                                let args = args'
+                                let arg = args.[position]
+                                if arg.Type = v.Type then
+                                    let result = traverse arg
+                                    loop x (position + 1) (result::acc)
+                                else
+                                    loop x position acc
+
+                            | Patterns.Let(a, Patterns.TupleGet(b,c), d) ->
+                                loop d position acc
+                            
+                            | _ -> acc
+
+                        loop expr 0 []
+                        
+                    | None -> [for a in args' -> traverse a]
+
+                let arguments = getArguments (definition, args)
+
+                let getCallNode node =
+                    if arguments.Length = 0 then
+                        Call(node, arguments)
+                    else
+                        let temp = ref node
+
+                        for a in arguments |> List.rev do
+                            temp := Call(temp.Value, [a])
+
+                        temp.Value
+
+                match exprs with
+                | Some expr ->
+                    let left = traverse exprs.Value
+                    getCallNode (MemberAccess(realName, left))
+                | None -> 
+                    let node = getMemberAccess (m.Name, m.DeclaringType)
+                    
+                    getCallNode node
+
         | Patterns.IfThenElse(s,b,e) ->
             
             let els = rewriteBodyWithReturn (traverse e)
@@ -270,10 +310,15 @@ let convertToAst quote =
 
         | Patterns.PropertyGet(l, i, []) ->
             if l.IsSome then
-                let left = traverse l.Value
-                MemberAccess(i.Name, left)
+                    let left = traverse l.Value
+                    MemberAccess(i.Name, left)
             else
                 getMemberAccess (i.Name, i.DeclaringType)
+        | Patterns.PropertyGet(l,i,r) ->
+            let left = if l.IsSome then Some(traverse l.Value) else None
+            let args = [for a in r -> traverse a]
+            
+            Call(MemberAccess(i.Name, left.Value), args)
         | Patterns.FieldGet(l,i) ->
             let left = traverse l.Value
             MemberAccess(i.Name, left)
@@ -302,11 +347,7 @@ let convertToAst quote =
             node
 
         //potentially only index access
-        | Patterns.PropertyGet(l,i,r) ->
-            let left = if l.IsSome then Some(traverse l.Value) else None
-            let args = [for a in r -> traverse a]
-            
-            Call(MemberAccess(i.Name, left.Value), args)
+        
         | Patterns.TypeTest(expr, t) ->
             let left = traverse expr
 

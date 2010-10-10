@@ -108,6 +108,10 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <ProjectReference Include="..\FSharp.Javascript.Tests\FSharp.Javascript.Tests.fsproj">
+      <Project>{7425F8F3-808D-4308-BC97-73A2C87029D3}</Project>
+      <Name>FSharp.Javascript.Tests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FSharp.Javascript.Web.Model\FSharp.Javascript.Web.Model.fsproj">
       <Project>{334DF2FD-C545-448C-9745-2233F378BB67}</Project>
       <Name>FSharp.Javascript.Web.Model</Name>

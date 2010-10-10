@@ -63,6 +63,9 @@
  not in the subset that can be converted to a LINQ expression tree
 </summary>
 </member>
+<member name="">
+
+</member>
 <member name="M:Microsoft.FSharp.Linq.QuotationEvaluator.EvaluateUntyped(Microsoft.FSharp.Quotations.FSharpExpr)">
 <summary>
  Compile the quotation expression by first converting to LINQ expression trees
@@ -96,6 +99,14 @@
 </summary>
 </member>
 <member name="">
+
+</member>
+<member name="M:Microsoft.FSharp.Linq.ExtraHashCompare.GenericNotEqualIntrinsic``1(``0,``0)">
+<summary>
+ An intrinsic for compiling &lt;c&gt;&amp;lt;@ x &lt;&gt; y @&amp;gt;&lt;/c&gt; to expression trees
+</summary>
+</member>
+<member name="T:Microsoft.FSharp.Linq.ExtraHashCompare">
 
 </member>
 <member name="M:Microsoft.FSharp.Linq.QueryModule.groupJoin``4(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},Microsoft.FSharp.Core.FSharpFunc`2{``0,``2},Microsoft.FSharp.Core.FSharpFunc`2{``1,``2},Microsoft.FSharp.Core.FSharpFunc`2{``0,Microsoft.FSharp.Core.FSharpFunc`2{System.Collections.Generic.IEnumerable{``1},``3}})">

@@ -43,18 +43,18 @@ let getBaseType (startingType:System.Type) =
 
                 innerGet startingType
 
-let getEqualityFunction (parameters:ParameterInfo array) =
+let getEqualityFunction (parameters:string list) =
 
     let initialStatement = Assign(Identifier("result", true), Ast.Boolean(true))
-    let getBlock (p:ParameterInfo) = Assign(Identifier("result", false), 
+    let getBlock (p:string) = Assign(Identifier("result", false), 
                                         BinaryOp(Identifier("result", false), 
                                             Call(Call(Identifier("Operators.op_Equality", false),
-                                                [MemberAccess(camelCase(p.Name), Identifier("this", false))]),
-                                                    [MemberAccess(camelCase(p.Name), Identifier("compareTo", false))]), 
+                                                [MemberAccess(camelCase(p), Identifier("this", false))]),
+                                                    [MemberAccess(camelCase(p), Identifier("compareTo", false))]), 
                                                         System.Linq.Expressions.ExpressionType.AndAlso))
 
 
-    let blockStatements = parameters |> Array.map getBlock |> Array.rev |> Array.toList
+    let blockStatements = parameters |> List.map getBlock |> List.rev
     
     
     let statements = match blockStatements with
@@ -127,8 +127,8 @@ let getAstFromType (mo:System.Type) =
                                                         let inheritance = Assign(MemberAccess("prototype", MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType))), 
                                                                                  MemberAccess("prototype", getMemberAccess(t.Name, t.DeclaringType))) in
 
-                                                        let equals = Assign(MemberAccess("Equals", MemberAccess("prototype", MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType)))),
-                                                                            getEqualityFunction parameters) in
+                                                        let equals = Assign(MemberAccess("Equality", MemberAccess("prototype", MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType)))),
+                                                                            getEqualityFunction (parameters |> Array.map (fun p -> p.Name) |> Array.toList) ) in
                                                         [equals;inheritance;construct]
                                                         ]
 
@@ -172,7 +172,17 @@ let getAstFromType (mo:System.Type) =
                                                         | _ -> t)
                                                         ]
 
-            (func::acc@inherits@q)@childResults
+            let equality =
+                if FSharpType.IsRecord t then
+                    let propertyNames = (properties |> List.map (fun x -> x.Name))
+                    let equalityFunction = getEqualityFunction propertyNames
+                    let result = Assign(MemberAccess("Equality", MemberAccess("prototype", getMemberAccess(t.Name, t.DeclaringType))), equalityFunction)
+                    [result]
+                else
+                    []
+                
+
+            (func::acc@inherits@equality@q)@childResults
 
 
     (loop mo []) |> List.rev

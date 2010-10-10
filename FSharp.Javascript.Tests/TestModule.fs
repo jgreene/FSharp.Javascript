@@ -17,6 +17,9 @@ with
     [<ReflectedDefinition>]
     member this.GetProp2(x) = this.Prop2 + x
 
+    [<ReflectedDefinition>]
+    member this.MultipleArgsOnRecord(a,b) = a - b
+
 type class1(name) =
     member this.Name = name
     [<ReflectedDefinition>]
@@ -61,3 +64,12 @@ let unitResult (x:int) = ()
 
 [<ReflectedDefinition>]
 let (><) a b = a = b
+
+[<ReflectedDefinition>]
+let multipleArgs a b = a - b
+
+[<ReflectedDefinition>]
+let tupledArgs (a,b) (c,d) = a + b + c + d
+
+[<ReflectedDefinition>]
+let mixedTupledArgs a (c,d) = a + c + d

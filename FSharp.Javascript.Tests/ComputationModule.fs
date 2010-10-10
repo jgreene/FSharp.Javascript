@@ -20,7 +20,7 @@ let maybe = new MaybeBuilder()
 
 
 [<ReflectedDefinition>]
-let print() = System.Console.WriteLine("got here")
+let print() = System.Console.WriteLine("got here two")
 
 [<ReflectedDefinition>]
 print()

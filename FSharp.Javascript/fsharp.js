@@ -8,7 +8,7 @@ Operators.op_Equality = function (one) {
         if (one == null && two != null)
             return false
 
-        if (one != null && one.Equality != null) {
+        if (one != null && one.Equality) {
             return one.Equality(two)
         }
 
@@ -47,14 +47,18 @@ Operators.FailurePattern = function (msg) {
     }
 }
 
-Operators.op_PipeRight = function (item) {
-    return function(func){
+Operators.op_PipeRight = function (func) {
+    return function(item){
         return func(item)
     }
 }
 
 Operators.Ignore = function (value) {
     return null
+}
+
+Operators.Fst = function (tup) {
+    return tup.Item1;
 }
 
 
@@ -140,11 +144,16 @@ var SeqModule = {}
 SeqModule.Delay = function (func) {
     return func();
 }
-SeqModule.Map = function (func, item) {
-    return new Map(func, item)
+SeqModule.Map = function (a) {
+    return function (b) {
+        return new Map(b, a)
+    }
+    
 }
-SeqModule.Filter = function (func, item) {
-    return new Filter(func, item)
+SeqModule.Filter = function (a) {
+    return function (b) {
+        return new Filter(b, a)
+    }
 }
 
 
@@ -165,7 +174,7 @@ Operators.CreateSequence = function (source) {
 }
 
 SeqModule.ToArray = function (source) {
-    var arr = new Array()
+    var arr = []
     while (source.read())
         arr.push(source.get())
     return arr
@@ -175,8 +184,11 @@ Sequence.prototype.ToArray = function () {
     return SeqModule.ToArray(this)
 }
 
-SeqModule.Collect = function (tup) {
-    return new Concat(new Map(tup.Item1, tup.Item2))
+SeqModule.Collect = function (a) {
+    return function (b) {
+        return new Concat(new Map(b, a))
+    }
+    
 }
 
 function Concat(sources) {
