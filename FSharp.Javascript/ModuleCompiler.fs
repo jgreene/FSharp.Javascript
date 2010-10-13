@@ -69,6 +69,13 @@ let getEqualityFunction (parameters:string list) =
 
     (Function(Block(statements@[initialStatement]), [Identifier("compareTo", false)], None))
 
+//let createPrototype name:string node:node =
+//     Assign(MemberAccess("prototype", MemberAccess(name
+
+let getInheritance (t:Type) =
+    let baseType = getBaseType t
+    let inherits = if baseType = t then [] else [Assign(MemberAccess("prototype", getMemberAccess (t.Name, t.DeclaringType)), MemberAccess("prototype", getMemberAccess (baseType.Name, t.DeclaringType)))]
+    inherits
 
 let getAstFromType (mo:System.Type) =
     let rec loop (t:Type) acc =
@@ -134,11 +141,27 @@ let getAstFromType (mo:System.Type) =
 
             
             
-            let baseType = getBaseType t
-            let inherits = if baseType = t then [] else [Assign(MemberAccess("prototype", getMemberAccess (t.Name, t.DeclaringType)), MemberAccess("prototype", getMemberAccess (baseType.Name, t.DeclaringType)))]
+            //let inherits = getInheritance t
 
 
             Assign(getMemberAccess (t.Name, t.DeclaringType), Function(Block([]), [], None))::[Block(func)]
+        
+        elif t.BaseType = typeof<Enum> then
+            let values = Enum.GetValues(t) :?> int[]
+            let enums = values |> Array.map (fun v -> (Enum.GetName(t,v), v)) |> Array.toList
+
+            let func = [for (n,i) in enums do yield!
+                                                let construct = Assign(MemberAccess(n, getMemberAccess(t.Name, t.DeclaringType)),
+                                                                    Function(Block([Assign(MemberAccess("Text", Identifier("this", false)), Ast.String(n,'"'));
+                                                                                    Assign(MemberAccess("Integer", Identifier("this", false)), Number(Some(i), None))]), [], None)) in
+
+                                                let inheritance = Assign(MemberAccess("prototype", MemberAccess(n, getMemberAccess(t.Name, t.DeclaringType))), 
+                                                                                             MemberAccess("prototype", getMemberAccess(t.Name, t.DeclaringType))) in
+                                                [inheritance;construct]]
+
+            let inherits = Assign(MemberAccess("prototype", getMemberAccess (t.Name, t.DeclaringType)), MemberAccess("prototype", Identifier("Enum", false)))
+            
+            Assign(getMemberAccess (t.Name, t.DeclaringType), Function(Block([]), [], None))::inherits::[Block(func)]
         else
             let properties = t.GetProperties() |> Array.toList
             let constructors = t.GetConstructors() |> Array.toList

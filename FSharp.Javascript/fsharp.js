@@ -1,4 +1,20 @@
-﻿var Operators = {}
+﻿function createNamespace(namespace) {
+    var current = ''
+    var names = namespace.split('.')
+    for (var i = 0; i++; i < names.length) {
+        var name = names[i]
+        if (current == '') {
+            current = name
+        } else {
+            current = current + '.' + name
+        }
+
+        parent[current] = {}
+        i++;
+    }
+}
+
+var Operators = {}
 
 Operators.op_Equality = function (one) {
     return function (two) {
@@ -307,5 +323,35 @@ SeqModule.ToList = function (sequence) {
     return list;
 }
 
+
+
+
+LanguagePrimitives = {}
+LanguagePrimitives.IntrinsicFunctions = {}
+
+LanguagePrimitives.IntrinsicFunctions.UnboxGeneric = function (x) { return x; }
+
+Enum = function () { }
+Enum.prototype.toString = function () {
+    return this.Text;
+}
+
+Enum.prototype.Equality = function (x) {
+    return x.Integer == this.Integer;
+}
+
+Operators.ToInt = function (x) {
+    if (x instanceof Enum)
+        return x.Integer;
+
+    return x;
+}
+
+Operators.ToString = function (x) {
+    if (x instanceof Enum)
+        return x.Text;
+
+    return x;
+}
 
 

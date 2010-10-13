@@ -414,3 +414,38 @@ type QuotationsTests() =
         test <@ let record = { Prop1 = 1; Prop2 = "neat" }
                 let result = record.MultipleArgsOnRecord(1,2)
                 emit result @>
+
+    [<Test>]
+    member this.``Can match on enum``() =
+        test <@ let color = Color.Red
+                let result = match color with
+                            | Color.Red -> "red"
+                            | Color.Blue -> "blue"
+                            | Color.Green -> "green"
+                            | _ -> failwith "invalid color"
+                emit result @>
+
+    [<Test>]
+    member this.``Enum ToString works properly``() =
+        test <@ let color = Color.Red
+                let result = color.ToString()
+                emit result @>
+
+    [<Test>]
+    member this.``Enum cast to int works properly``() =
+        test <@ let color = Color.Red
+                let result = (int)color;
+                emit result @>
+
+    [<Test>]
+    member this.``Enum cast to string works properly``() =
+        test <@ let color = Color.Red
+                let result = (string)color;
+                emit result @>
+
+    [<Test>]
+    member this.``Casting works`` () =
+        test <@ let item = new class2("blah", 1) :> class1
+                let item2 = item :?> class2
+                let result = item2.Name
+                emit result @>
