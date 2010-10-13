@@ -362,7 +362,21 @@ let convertToAst quote =
             | _ when x.FullName = "String" -> Null
             | _ when x.FullName = "Int32" -> Number(Some(0), None)
             | _ -> Number(Some(0), None)
+
+        | Patterns.PropertySet(a,pi, exps,c) ->
+            let a' = traverse a.Value
+                
+            let memberAccess = MemberAccess(pi.Name, a')
+
+            Assign(memberAccess, traverse c)
+        | Patterns.VarSet(a, v) ->
+            Assign(Identifier(a.Name, false), traverse v)
+        | Patterns.WhileLoop(a,b) ->
+            While(traverse a, traverse b, true)
+                
         | ShapeVar v -> Identifier(cleanName v.Name, false)
+            
+        
             
         | _ -> failwith "quotation conversion failure"
 

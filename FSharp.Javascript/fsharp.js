@@ -1,19 +1,4 @@
-﻿function createNamespace(namespace) {
-    var current = ''
-    var names = namespace.split('.')
-    for (var i = 0; i++; i < names.length) {
-        var name = names[i]
-        if (current == '') {
-            current = name
-        } else {
-            current = current + '.' + name
-        }
-
-        parent[current] = {}
-        i++;
-    }
-}
-
+﻿
 var Operators = {}
 
 Operators.op_Equality = function (one) {
@@ -324,8 +309,6 @@ SeqModule.ToList = function (sequence) {
 }
 
 
-
-
 LanguagePrimitives = {}
 LanguagePrimitives.IntrinsicFunctions = {}
 
@@ -352,6 +335,24 @@ Operators.ToString = function (x) {
         return x.Text;
 
     return x;
+}
+
+Operators.Reference = function (x) {
+    this.Value = x;
+}
+
+Operators.Ref = function (x) {
+    return new Operators.Reference(x);
+}
+
+Operators.op_ColonEquals = function (x) {
+    return function (item) {
+        item.Value = x;
+    }
+}
+
+Operators.op_Dereference = function (x) {
+    return x.Value;
 }
 
 

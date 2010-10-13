@@ -449,3 +449,36 @@ type QuotationsTests() =
                 let item2 = item :?> class2
                 let result = item2.Name
                 emit result @>
+
+    [<Test>]
+    member this.``Can assign to mutable property on class``() =
+        test <@ let item = new class2("blah", 1)
+                item.Age <- 18
+
+                emit (item.Age) @>
+
+    [<Test>]
+    member this.``Can update ref``() =
+        test <@ let item = ref 1
+                item := 2
+                emit !item @> 
+
+    [<Ignore("F# powerpack cannot convert this to an Expression Tree")>]
+    [<Test>]
+    member this.``Can update mutable value``() =
+        test <@ let mutable item = 1
+                item <- 2
+                emit item @>
+
+    [<Test>]
+    member this.``Can use while loop``() =
+        test <@ let item = ref 1
+                while !item < 10 do
+                    item := !item + 1
+                emit !item @>
+
+    [<Ignore("F# quotation system cannot get the AST of a constructor")>]
+    [<Test>]
+    member this.``Classes constructor fires``() =
+        test <@ let item = new class2("blah", 1)
+                emit (item.Age) @>

@@ -25,10 +25,16 @@ type class1(name) =
     [<ReflectedDefinition>]
     member this.GetName() = this.Name
 
+
 type class2(name, id) =
     inherit class1(name)
+    [<ReflectedDefinition>]
+    let mutable age = 0
 
     member this.Id = id
+    member this.Age
+        with get() = age
+        and set(value) = age <- value
 
 [<ReflectedDefinition>]
 let getProp1 (x:first) = x.Prop1

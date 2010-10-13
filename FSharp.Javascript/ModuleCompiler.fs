@@ -166,6 +166,7 @@ let getAstFromType (mo:System.Type) =
             let properties = t.GetProperties() |> Array.toList
             let constructors = t.GetConstructors() |> Array.toList
             let construct = if constructors.Length > 0 then Some(constructors.Head) else None
+
             let parameters = if construct.IsSome then [for p in construct.Value.GetParameters() do yield Identifier(p.Name, false)] else []
 
             let members = [for p in properties do yield
