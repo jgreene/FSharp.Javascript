@@ -482,3 +482,12 @@ type QuotationsTests() =
     member this.``Classes constructor fires``() =
         test <@ let item = new class2("blah", 1)
                 emit (item.Age) @>
+
+    [<Ignore("F# powerpack cannot convert this to an Expression Tree")>]
+    [<Test>]
+    member this.``Integer Range Loop``() =
+        test <@ let item = ref 1
+                for i in {0..10} do
+                    item := i
+
+                emit !item @>

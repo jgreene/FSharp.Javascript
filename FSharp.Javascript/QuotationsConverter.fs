@@ -322,9 +322,6 @@ let convertToAst quote =
         | Patterns.FieldGet(l,i) ->
             let left = traverse l.Value
             MemberAccess(i.Name, left)
-        | Patterns.FieldGet(l,i) ->
-            let left = traverse l.Value
-            MemberAccess(i.Name, left)
         | Patterns.TryWith(a,b,c,d,e) -> 
             let tryBody = traverse a
             let withBody = traverse e
@@ -341,10 +338,6 @@ let convertToAst quote =
             let left = traverse l
             let right = traverse r
             Block([right;left])
-
-        | Patterns.Coerce(n,t) ->
-            let node = traverse n
-            node
 
         //potentially only index access
         
@@ -373,6 +366,16 @@ let convertToAst quote =
             Assign(Identifier(a.Name, false), traverse v)
         | Patterns.WhileLoop(a,b) ->
             While(traverse a, traverse b, true)
+        | Patterns.FieldSet(a,pi,c) ->
+            let a' = traverse a.Value
+                
+            let memberAccess = MemberAccess(pi.Name, a')
+
+            Assign(memberAccess, traverse c)
+        //variable name, start, end, body
+        | Patterns.ForIntegerRangeLoop(v, a, b, c) ->
+            let oper = BinaryOp(Identifier(v.Name, false), traverse b, ExpressionType.LessThanOrEqual)
+            ForStepNode(Assign(Identifier(v.Name, true), traverse a), oper, PostfixOperator(Identifier(v.Name, false), ExpressionType.PostIncrementAssign), traverse c)
                 
         | ShapeVar v -> Identifier(cleanName v.Name, false)
             
