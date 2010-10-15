@@ -374,15 +374,18 @@ SeqModule.Map
 MapModule = {}
 
 MapModule.Empty = function () {
-    return []
+    var list = new FSharpList.Empty();
+    list.Count = list.Length
+    return list;
 }
 
 MapModule.Add = function (source) {
     return function (value) {
         return function (key) {
-            source.push({ key: key, value: value })
-
-            return source
+            var item = { key: key, value: value }
+            var list = new FSharpList.Cons(source, item)
+            list.Count = list.Length
+            return list
         }
     }
 }

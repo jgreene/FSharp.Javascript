@@ -513,3 +513,11 @@ type QuotationsTests() =
         test <@ let myMap = Map.empty |> (Map.add "first" 1) |> (Map.add "second" 2) |> (Map.add "third" 3)
                 let result = myMap |> Map.find ("third")
                 emit result @>
+
+    [<Test>]
+    member this.``Map is immutable``() =
+        test <@ let myMap = Map.empty |> Map.add "first" 1
+                let myMap2 = myMap |> Map.add "second" 2
+                emit (myMap.Count = 1 && myMap2.Count = 2)
+                //emit myMap.Count
+             @>
