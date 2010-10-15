@@ -521,3 +521,20 @@ type QuotationsTests() =
                 emit (myMap.Count = 1 && myMap2.Count = 2)
                 //emit myMap.Count
              @>
+
+    [<Test>]
+    member this.``Map ContainsKey works``() =
+        test <@ let myMap = Map.empty |> (Map.add "first" 1) |> (Map.add "second" 2) |> (Map.add "third" 3)
+                emit (myMap.ContainsKey "second") @>
+
+    [<Test>]
+    member this.``Map Remove works``() =
+        test <@ let myMap = Map.empty |> (Map.add "first" 1) |> (Map.add "second" 2) |> (Map.add "third" 3)
+                let myMap2 = myMap.Remove "second"
+                emit (myMap2.ContainsKey "second") @>
+
+    [<Test>]
+    member this.``List exists works``() =
+        test <@ let list = [1;2;3;4;5]
+                let result = list |> List.exists (fun x -> x = 4)
+                emit result @>

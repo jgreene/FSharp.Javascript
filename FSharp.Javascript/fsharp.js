@@ -304,6 +304,20 @@ ListModule.Reverse = function (sequence) {
     return list;
 }
 
+ListModule.Exists = function (list) {
+    return function (func) {
+        while (list.read()) {
+            var item = list.get()
+
+            var result = func(item)
+            if (result == true)
+                return true;
+        }
+
+        return false;
+    }
+}
+
 SeqModule.ToList = function (sequence) {
     var list = new FSharpList.Empty();
     while (sequence.read()) {
@@ -369,23 +383,94 @@ SeqModule.Iterate = function (source) {
     }
 }
 
-SeqModule.Map
+
+FSharpMap = {}
+
+FSharpMap.Empty = function () {
+    this.Count = 0
+    this.Head = null
+    this.IsEmpty = true
+    this.Tail = null
+    this.Item = function (x) {
+        return null
+    }
+}
+
+FSharpMap.Empty.prototype.read = function () {
+    return false
+}
+
+FSharpMap.Cons = function (list, arg) {
+    this.ReadState = null;
+    this.Count = list.Count + 1;
+    this.Head = arg;
+    this.IsEmpty = false;
+    this.Tail = list;
+    this.Item = function (x) {
+        if (x == 0)
+            return this.Head;
+        else
+            return this.Tail.Item(x - 1);
+    }
+}
+
+FSharpMap.Cons.prototype.read = function () {
+    if (this.ReadState == null)
+        this.ReadState = this.Count
+
+    this.ReadState--;
+    if (this.ReadState < 0) {
+        this.ReadState = null
+        return false;
+    }
+
+
+    return true;
+}
+
+
+FSharpMap.Cons.prototype.get = function () {
+    return this.Item(this.ReadState)
+}
+
+FSharpMap.Cons.prototype.ContainsKey = function (key) {
+    while (this.read()) {
+        var item = this.get()
+        if (item == null)
+            return false;
+        if (item.key == key)
+            return true;
+    }
+
+    return false;
+}
+
+FSharpMap.Cons.prototype.Remove = function (key) {
+    var result = new FSharpMap.Empty()
+    while (this.read()) {
+        var item = this.get()
+        if (item == null)
+            return result;
+
+        if (item.key != key) {
+            result = new FSharpMap.Cons(result, item)
+        }
+    }
+
+    return result;
+}
 
 MapModule = {}
 
 MapModule.Empty = function () {
-    var list = new FSharpList.Empty();
-    list.Count = list.Length
-    return list;
+    return new FSharpMap.Empty();
 }
 
 MapModule.Add = function (source) {
     return function (value) {
         return function (key) {
             var item = { key: key, value: value }
-            var list = new FSharpList.Cons(source, item)
-            list.Count = list.Length
-            return list
+            return new FSharpMap.Cons(source, item)
         }
     }
 }
@@ -402,5 +487,4 @@ MapModule.Find = function (source) {
         return null;
     }
 }
-
 
