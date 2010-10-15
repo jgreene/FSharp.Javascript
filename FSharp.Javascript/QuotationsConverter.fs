@@ -35,6 +35,7 @@ let getOperator op =
 let getFunction func =
     match func with
     | "ToString" -> Some "toString"
+    | "ToLower" -> Some "toLowerCase"
     | _ -> None
 
 let isBinaryOp op =
