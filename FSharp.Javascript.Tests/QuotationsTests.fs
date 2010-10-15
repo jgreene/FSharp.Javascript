@@ -491,3 +491,25 @@ type QuotationsTests() =
                     item := i
 
                 emit !item @>
+
+    [<Test>]
+    member this.``Can iterate sequence``() =
+        test <@ let item = ref 1
+                let sequence = [1;2;3;4;5;6;7;8;9;10]
+                sequence |> Seq.iter (fun x -> do
+                                        item := !item + x)
+
+                let result = !item
+                emit result @>
+
+    [<Test>]
+    member this.``Can use map1``() =
+        test <@ let myMap = Map.empty |> (Map.add "first" 1)
+                let result = myMap |> Map.find ("first")
+                emit result @>
+
+    [<Test>]
+    member this.``Can use map2``() =
+        test <@ let myMap = Map.empty |> (Map.add "first" 1) |> (Map.add "second" 2) |> (Map.add "third" 3)
+                let result = myMap |> Map.find ("third")
+                emit result @>

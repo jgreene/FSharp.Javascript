@@ -28,6 +28,7 @@ type class1(name) =
 
 type class2(name, id) =
     inherit class1(name)
+
     [<ReflectedDefinition>]
     let mutable age = 0
 

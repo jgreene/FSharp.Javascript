@@ -355,4 +355,43 @@ Operators.op_Dereference = function (x) {
     return x.Value;
 }
 
+SeqModule.Iterate = function (source) {
+    return function (func) {
+        while (source.read()) {
+            func(source.get())
+        }
+    }
+}
+
+SeqModule.Map
+
+MapModule = {}
+
+MapModule.Empty = function () {
+    return []
+}
+
+MapModule.Add = function (source) {
+    return function (value) {
+        return function (key) {
+            source.push({ key: key, value: value })
+
+            return source
+        }
+    }
+}
+
+MapModule.Find = function (source) {
+    return function (key) {
+        while (source.read()) {
+            var item = source.get()
+            if (item.key == key) {
+                return item.value;
+            }
+        }
+
+        return null;
+    }
+}
+
 

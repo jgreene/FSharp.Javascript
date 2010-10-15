@@ -139,35 +139,107 @@ let convertToAst quote =
                     | Lambda(v,e) -> true
                     | _ -> false
 
-                //this rewrites the arguments to make it more javascript friendly
-                let args = [for a in args do yield match a with
-                                                        | Patterns.Let(x,y,z) when isLambda y && isLambda z -> 
-                                                            let result = match z with
-                                                                            | Lambda(v, e) ->
-                                                                                match e with
-                                                                                | Microsoft.FSharp.Quotations.Patterns.Call(p, i,h::t::[]) -> 
-                                                                                    if p.IsSome then
-                                                                                        Expr.Lambda(v, Expr.Call(p.Value, i, y::t::[]))
-                                                                                    else
-                                                                                        Expr.Lambda(v, Expr.Call(i, y::t::[]))
-                                                                                | _ -> e
-                                                                            | _ -> z
-                                                            result
-                                                         | Patterns.Let(x,y,z) -> match z with
-                                                                                    | Patterns.Call(p,i,ar) -> 
-                                                                                        if p.IsSome then
-                                                                                            Expr.Call(y, i, ar)
-                                                                                        else
-                                                                                            Expr.Call(i, ar)
-                                                                                    | _ -> a
-                                                         | _ -> a]
 
+                //this rewrites the arguments to make it more javascript friendly
+                //this somehow needs to be generalized, but I'm not seeing a way currently
+//                let args = [for a in args do yield match a with
+//                                                    | Patterns.Let(x,y,z) when isLambda y && isLambda z -> 
+//                                                        let result = match z with
+//                                                                        | Lambda(v, e) ->
+//                                                                            match e with
+//                                                                            | Microsoft.FSharp.Quotations.Patterns.Call(p, i,h::t::[]) -> 
+//                                                                                if p.IsSome then
+//                                                                                    Expr.Lambda(v, Expr.Call(p.Value, i, y::t::[]))
+//                                                                                else
+//                                                                                    Expr.Lambda(v, Expr.Call(i, y::t::[]))
+//                                                                            | _ -> e
+//                                                                        | _ -> z
+//                                                        result
+//                                                    | Patterns.Let(a,b, Patterns.Let(c,d, Patterns.Lambda(e, Patterns.Call(f, g, h::i::j::[])))) ->
+//                                                        if f.IsSome then
+//                                                            Expr.Lambda(e, Expr.Call(f.Value,g,(b::d::j::[])))
+//                                                        else
+//                                                            Expr.Lambda(e, Expr.Call(g,(b::d::j::[])))
+//                                                    | Patterns.Let(x,y,z) -> match z with
+//                                                                            | Patterns.Call(p,i,ar) -> 
+//                                                                                if p.IsSome then
+//                                                                                    Expr.Call(y, i, ar)
+//                                                                                else
+//                                                                                    Expr.Call(i, ar)
+//                                                                            | _ -> a
+//                                                    | _ -> a]
+
+                let getArgs args' =
+                    let rec loop arg lets =
+                        match arg with
+                        | Patterns.Let(x,y,z) ->
+                            loop z (lets |> Map.add x y)
+                        | Patterns.Call(a,m,cargs) ->
+                            let newArgs = [for carg in cargs -> 
+                                            match carg with
+                                            | Var x when (lets.ContainsKey x) ->
+                                                let newArg = lets |> Map.find (x)
+                                                newArg
+                                            | _ -> carg]
+
+                            if a.IsSome then
+                                let a' = match a.Value with
+                                        | Var x when (lets.ContainsKey x) ->
+                                            lets |> Map.find (x)
+                                        | _ -> a.Value
+                                Expr.Call(a', m, newArgs)
+                            else
+                                Expr.Call(m, newArgs)
+                        | Patterns.Lambda(_, Patterns.Let(_,_,_)) ->
+                            arg
+                        | Patterns.Lambda(v,e) ->
+                            Expr.Lambda(v, (loop e lets))
+                        | _ -> arg
+
+                    [for a in args' -> (loop a Map.empty)]
+
+                let args = getArgs args
+
+//                let getArgs args =
+//                    let argMap = Map.empty
+//                    let rec loop arg acc =
+//                        match arg with
+//                        | Patterns.Let(x,y,z) -> 
+//                            match z with
+//                            | Patterns.Call(a, m, cargs) ->
+////                                let callArgs = [for c in cargs ->
+////                                                        match c with
+////                                                        | 
+//    
+//                                match a with
+//                                | Some x' -> 
+//                                    match x' with
+//                                    | Patterns.Var x' ->
+//                                        if x'.Name = x.Name then
+//                                            (Expr.Call(y, m, cargs))::acc
+//                                        else
+//                                            loop z acc
+//                                    | _ -> loop z acc
+//                                | None -> loop z acc
+//
+//                            | Patterns.Let(x',y',z') ->
+//                                y'::y::(loop z' acc)
+//                            | _ ->  y::(loop z acc)
+//                        
+//                            
+//                        | _ -> arg::acc
+//
+//
+//                    [for arg in args do yield! loop arg []]
+//
+//                let args = getArgs args
+                    
 
 
                 let definition = Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(m)
 
                 let name = getFunction m.Name
-                let realName = if name.IsSome then cleanName name.Value else cleanName m.Name
+                let realName =  if name.IsSome then name.Value else cleanName m.Name
 
                 let createTuple args' = New(Identifier("Tuple", false), args', None)
 
