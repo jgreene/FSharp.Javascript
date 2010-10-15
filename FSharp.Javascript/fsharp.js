@@ -109,6 +109,12 @@ Range.prototype.read = function () {
         return false
 }
 
+Operators.op_Range = function (end) {
+    return function (start) {
+        return new Range(start, end)
+    }
+}
+
 function Map(func, source) {
     this.func = func
     this.source = source

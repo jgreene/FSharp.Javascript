@@ -26,11 +26,14 @@ let print input =
 //[<ReflectedDefinition>]
 let emit x = x
 
+let getRandomFileName () = System.Guid.NewGuid().ToString() + ".js"
+
 let run (source:string) =
-    let filePath = "C:\\Users\\nephesh\\test.js"
+    let fileName = getRandomFileName ()
+    let filePath = "C:\\Users\\nephesh\\" + fileName
     File.WriteAllText(filePath, source)
 
-    let info = new ProcessStartInfo("C:\\cygwin\\bin\\bash", "--login -i -c \"node test.js\"")
+    let info = new ProcessStartInfo("C:\\cygwin\\bin\\bash", "--login -i -c \"node " + fileName + "\"")
     info.CreateNoWindow <- false
     info.UseShellExecute <- true
     info.WindowStyle <- ProcessWindowStyle.Hidden
@@ -39,8 +42,11 @@ let run (source:string) =
 
     proc.WaitForExit()
 
-    let testResultPath = "C:\\Users\\nephesh\\testResult.js"
+    File.Delete(filePath)
+
+    let testResultPath = "C:\\Users\\nephesh\\" + fileName + "Result.js"
     let result = File.ReadAllText(testResultPath)
+    
     File.Delete(testResultPath)
     result
 

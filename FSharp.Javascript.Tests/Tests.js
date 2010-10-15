@@ -1,15 +1,13 @@
 ﻿var QuotationsTestHelper = {}
 QuotationsTestHelper.emit = function (x) {
-    var sys = require('sys')
     var fs = require('fs')
 
-    sys.print("got here");
-
+    var fileName = __filename + "Result.js"
     try{
 
-        fs.writeFileSync('testResult.js', x.toString());
+        fs.writeFileSync(fileName, x.toString());
     }
     catch (err){
-        fs.writeFileSync('testResult.js', err.toString());
+        fs.writeFileSync(fileName, err.toString());
     }
 }
