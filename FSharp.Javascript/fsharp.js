@@ -228,14 +228,41 @@ Concat.prototype.get = function () {
 }
 
 Array.prototype.read = function () {
-    if (this.position == null)
+    if (this.position == null) {
+        if (this.length == 0)
+            return false
+
         this.position = -1
-    var temp = this.position < this.length
-    this.position++
-    return temp
+
+    }
+    var temp = this.position < (this.length - 1)
+    if (temp) {
+        this.position++
+        return true
+    }
+    else {
+        this.position = null
+        return false
+    }
 }
 Array.prototype.get = function () {
     return this[this.position]
+}
+
+ArrayModule = {}
+
+ArrayModule.Fold = function (source) {
+    return function (acc) {
+        return function (func) {
+            //list = ListModule.Reverse(list)
+            while (source.read()) {
+                var next = source.get()
+                acc = func(acc)(next)
+            }
+
+            return acc
+        }
+    }
 }
 
 var FSharpList = {}
@@ -315,6 +342,20 @@ ListModule.Exists = function (list) {
         }
 
         return false;
+    }
+}
+
+ListModule.Fold = function (list) {
+    return function (acc) {
+        return function (func) {
+            list = ListModule.Reverse(list)
+            while (list.read()) {
+                var next = list.get()
+                acc = func(acc)(next)
+            }
+
+            return acc
+        }
     }
 }
 
@@ -400,6 +441,17 @@ FSharpMap.Empty.prototype.read = function () {
     return false
 }
 
+FSharpMap.Empty.prototype.ContainsKey = function (key) {
+    return false;
+}
+
+FSharpMap.Empty.prototype.Add = function (value) {
+    var self = this
+    return function (key) {
+        return MapModule.Add(self)(value)(key);
+    }
+}
+
 FSharpMap.Cons = function (list, arg) {
     this.ReadState = null;
     this.Count = list.Count + 1;
@@ -434,30 +486,26 @@ FSharpMap.Cons.prototype.get = function () {
 }
 
 FSharpMap.Cons.prototype.ContainsKey = function (key) {
-    while (this.read()) {
-        var item = this.get()
-        if (item == null)
-            return false;
-        if (item.key == key)
-            return true;
-    }
-
-    return false;
+    return MapModule.ContainsKey(this)(key)
 }
 
 FSharpMap.Cons.prototype.Remove = function (key) {
     var result = new FSharpMap.Empty()
     while (this.read()) {
         var item = this.get()
-        if (item == null)
-            return result;
-
         if (item.key != key) {
             result = new FSharpMap.Cons(result, item)
         }
     }
 
     return result;
+}
+
+FSharpMap.Cons.prototype.Add = function (value) {
+    var self = this;
+    return function (key) {
+        return MapModule.Add(self)(value)(key);
+    }
 }
 
 MapModule = {}
@@ -477,14 +525,42 @@ MapModule.Add = function (source) {
 
 MapModule.Find = function (source) {
     return function (key) {
+        var result = null;
         while (source.read()) {
             var item = source.get()
             if (item.key == key) {
-                return item.value;
+                result = item.value;
             }
         }
 
-        return null;
+        return result;
+    }
+}
+
+MapModule.TryFind = function (source) {
+    return function (key) {
+        var result = new FSharpOption.None();
+        while (source.read()) {
+            var item = source.get()
+            if (item.key == key) {
+                result = new FSharpOption.Some(item.value);
+            }
+        }
+
+        return result
+    }
+}
+
+MapModule.ContainsKey = function (source) {
+    return function (key) {
+        var result = false;
+        while (source.read()) {
+            var item = source.get()
+            if (item.key == key)
+                result = true;
+        }
+
+        return result;
     }
 }
 

@@ -534,7 +534,54 @@ type QuotationsTests() =
                 emit (myMap2.ContainsKey "second") @>
 
     [<Test>]
+    member this.``Map instance method Add works``() =
+        test <@ let myMap = Map.empty.Add("first", 1).Add("second", 2)
+                emit (myMap.ContainsKey "second") @>
+
+    [<Test>]
     member this.``List exists works``() =
         test <@ let list = [1;2;3;4;5]
                 let result = list |> List.exists (fun x -> x = 4)
                 emit result @>
+
+    [<Test>]
+    member this.``List fold works``() =
+        test <@ let list = ["1"; "2"; "3"; "fifty"]
+                let result = list |> List.fold (fun acc next -> next + "<br/>" + acc) ""
+                emit result @>
+
+    [<Test>]
+    member this.``Map with list value and fold works``() =
+        test <@ let errors = Map.empty |> (Map.add "first" ["1"; "2"; "3"; "fifty"])
+                let errs = errors |> Map.find "first"
+                let errorMessage = errs |> List.fold (fun acc next -> next + "<br/>" + acc) ""
+                emit errorMessage @>
+
+    [<Test>]
+    member this.``Map tryFind works``() =
+        test <@ let errors = Map.empty |> (Map.add "first" ["1"; "2"; "3"; "fifty"])
+                let result = errors |> Map.tryFind "first"
+                match result with
+                | Some x -> emit true
+                | None -> emit false @>
+
+    [<Test>]
+    member this.``Can iterate map twice``() =
+        test <@ let errors = Map.empty |> (Map.add "first" 1) |> (Map.add "second" 2)
+                let result = (errors |> Map.containsKey "second") && (errors |> Map.containsKey "first")
+                emit result
+                 @>
+
+    [<Test>]
+    member this.``Can iterate list twice``() =
+        test <@ let list = ["1"; "2"; "3"; "4"]
+                let first = list |> List.fold (fun acc next -> next + "<br/>" + acc) ""
+                let second = list |> List.fold (fun acc next -> next + "," + acc) ""
+                emit (first + second) @>
+
+    [<Test>]
+    member this.``Can iterate array twice``() =
+        test <@ let array = [|"1"; "2"; "3"; "4"|]
+                let first = array |> Array.fold (fun acc next -> next + "<br/>" + acc) ""
+                let second = array |> Array.fold (fun acc next -> next + "," + acc) ""
+                emit (first + second) @>

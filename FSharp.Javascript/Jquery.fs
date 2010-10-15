@@ -281,6 +281,7 @@ type jquery(x:System.Object) =
     member this.wrap(x) = new jquery(null)
     member this.wrapAll(x) = new jquery(null)
     member this.wrapInner(x) = new jquery(null)
+    member this.fsharpBind(x,y) = new jquery(null)
 
 
     static member ajax(x) = ()
