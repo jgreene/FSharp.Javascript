@@ -36,6 +36,7 @@ let getFunction func =
     match func with
     | "ToString" -> Some "toString"
     | "ToLower" -> Some "toLowerCase"
+    | "ToUpper" -> Some "toUpperCase"
     | _ -> None
 
 let isBinaryOp op =
@@ -125,10 +126,10 @@ let convertToAst quote =
                 let left = traverse args.[0]
                 let right = traverse args.[1]
                 IndexAccess(left, right)
-            | n when n.StartsWith "get_" ->
-                let arguments = [for a in args do yield traverse a] |> List.head
-
-                MemberAccess(m.Name.Replace("get_", ""), arguments)
+//            | n when n.StartsWith "get_" ->
+//                let arguments = [for a in args do yield traverse a] |> List.head
+//
+//                MemberAccess(m.Name.Replace("get_", ""), arguments)
 
             | _ -> 
 
@@ -311,17 +312,20 @@ let convertToAst quote =
         | Patterns.PropertyGet(l, i, []) ->
             if l.IsSome then
                     let left = traverse l.Value
-                    MemberAccess(i.Name, left)
+                    Call(MemberAccess("get_" + i.Name, left), [])
             else
-                getMemberAccess (i.Name, i.DeclaringType)
+                Call(getMemberAccess ("get_" + i.Name, i.DeclaringType), [])
         | Patterns.PropertyGet(l,i,r) ->
             let left = if l.IsSome then Some(traverse l.Value) else None
             let args = [for a in r -> traverse a]
             
-            Call(MemberAccess(i.Name, left.Value), args)
+            Call(MemberAccess("get_" + i.Name, left.Value), args)
         | Patterns.FieldGet(l,i) ->
-            let left = traverse l.Value
-            MemberAccess(i.Name, left)
+            if l.IsSome then
+                let left = traverse l.Value
+                MemberAccess(i.Name, left)
+            else
+                MemberAccess(i.Name, Identifier(i.DeclaringType.Name, false)) 
         | Patterns.TryWith(a,b,c,d,e) -> 
             let tryBody = traverse a
             let withBody = traverse e
@@ -359,9 +363,9 @@ let convertToAst quote =
         | Patterns.PropertySet(a,pi, exps,c) ->
             let a' = traverse a.Value
                 
-            let memberAccess = MemberAccess(pi.Name, a')
+            let memberAccess = MemberAccess("set_" + pi.Name, a')
 
-            Assign(memberAccess, traverse c)
+            Call(memberAccess, [traverse c])
         | Patterns.VarSet(a, v) ->
             Assign(Identifier(a.Name, false), traverse v)
         | Patterns.WhileLoop(a,b) ->

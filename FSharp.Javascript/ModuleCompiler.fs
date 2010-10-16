@@ -49,8 +49,8 @@ let getEqualityFunction (parameters:string list) =
     let getBlock (p:string) = Assign(Identifier("result", false), 
                                         BinaryOp(Identifier("result", false), 
                                             Call(Call(Identifier("Operators.op_Equality", false),
-                                                [MemberAccess(camelCase(p), Identifier("this", false))]),
-                                                    [MemberAccess(camelCase(p), Identifier("compareTo", false))]), 
+                                                [MemberAccess(camelCase("get_" + p), Identifier("this", false))]),
+                                                    [MemberAccess(camelCase("get_" + p), Identifier("compareTo", false))]), 
                                                         System.Linq.Expressions.ExpressionType.AndAlso))
 
 
@@ -69,8 +69,33 @@ let getEqualityFunction (parameters:string list) =
 
     (Function(Block(statements@[initialStatement]), [Identifier("compareTo", false)], None))
 
-//let createPrototype name:string node:node =
-//     Assign(MemberAccess("prototype", MemberAccess(name
+let createPropertyGet (property:PropertyInfo, t:System.Type) =
+                let def = (Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(property.GetGetMethod()))
+                let ast = if def.IsSome then Some((QuotationsConverter.convertToAst def.Value).Head) else None
+
+                Assign(MemberAccess("get_" + property.Name, 
+                        MemberAccess("prototype", 
+                            getMemberAccess (t.Name, t.DeclaringType))), 
+                                if ast.IsSome then
+                                    ast.Value
+                                else
+                                    Function(Return(Identifier("this." + property.Name, false)), [], None)
+                        )
+
+let createPropertySet (property:PropertyInfo, t:System.Type) =
+    let setMethod = property.GetSetMethod()
+    let setMethod = if setMethod = null then None else Some setMethod
+    let def = if setMethod.IsSome then (Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(setMethod.Value)) else None
+    let ast = if def.IsSome then Some((QuotationsConverter.convertToAst def.Value).Head) else None
+
+    Assign(MemberAccess("set_" + property.Name,
+            MemberAccess("prototype",
+                    getMemberAccess (t.Name, t.DeclaringType))), 
+                    if ast.IsSome then
+                        ast.Value
+                    else
+                        Function(Assign(Identifier("this." + property.Name, false), Identifier("x", false)), [Identifier("x", false)], None)
+        )
 
 let getInheritance (t:Type) =
     let baseType = getBaseType t
@@ -79,9 +104,6 @@ let getInheritance (t:Type) =
 
 let getAstFromType (mo:System.Type) =
     let rec loop (t:Type) acc =
-
-//        let assem = Assembly.GetAssembly(t)
-//        assem.GetReferencedAssemblies() |> Array.tryFind(fun x -> x.Name = "FSharp.Core")
         
         let childResults = [for ty in t.GetNestedTypes() do yield! loop ty []]
         let quotesAndMethods = [for m in t.GetMethods() ->
@@ -116,7 +138,7 @@ let getAstFromType (mo:System.Type) =
             let props = [for p in t.GetProperties() do yield (p, (Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(p.GetGetMethod())))] 
                                                 |> List.filter(fun (p,x) -> x.IsSome) 
                                                 |> List.map(fun (p,x) -> (p,(QuotationsConverter.convertToAst x.Value).Head))
-                                                |> List.map(fun (p,x) -> Assign(MemberAccess(p.Name, Identifier(t.Name, false)), x))
+                                                |> List.map(fun (p,x) -> Assign(MemberAccess("get_" + p.Name, Identifier(t.Name, false)), Function(Return(x), [], None)))
             
             let d = Assign(Identifier(t.Name, true), New(Null, [], Some([])))
             [d; Block((childResults@Block(result@props)::acc) |> List.rev)]
@@ -125,6 +147,13 @@ let getAstFromType (mo:System.Type) =
             let cases = FSharpType.GetUnionCases t
             let rdr = [for c in cases do yield FSharpValue.PreComputeUnionConstructorInfo c]
             let rd = [for r in rdr do yield (r,r.GetParameters())]
+
+            let createPropertyGet (property:ParameterInfo, r:MethodInfo) =
+                Assign(MemberAccess("get_" + camelCase(property.Name),
+                        MemberAccess("prototype", 
+                            MemberAccess(r.Name.Replace("New",""), 
+                                getMemberAccess(t.Name, t.DeclaringType)))),
+                                    Function(Return(Identifier("this." + camelCase(property.Name), false)), [], None))
 
             let func = [for (r,parameters) in rd do yield! 
                                                         let values = [for p in parameters do yield (Identifier(p.Name, false), Assign(MemberAccess(camelCase(p.Name), Identifier("this", false)), Identifier(p.Name,false)))] in
@@ -136,12 +165,11 @@ let getAstFromType (mo:System.Type) =
 
                                                         let equals = Assign(MemberAccess("Equality", MemberAccess("prototype", MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType)))),
                                                                             getEqualityFunction (parameters |> Array.map (fun p -> p.Name) |> Array.toList) ) in
-                                                        [equals;inheritance;construct]
+                                                        
+                                                        let props = parameters |> Array.map (fun prop -> createPropertyGet (prop,r)) |> Array.toList in
+                                                        
+                                                        props@[equals;inheritance;construct]
                                                         ]
-
-            
-            
-            //let inherits = getInheritance t
 
 
             Assign(getMemberAccess (t.Name, t.DeclaringType), Function(Block([]), [], None))::[Block(func)]
@@ -204,9 +232,15 @@ let getAstFromType (mo:System.Type) =
                     [result]
                 else
                     []
-                
 
-            (func::acc@inherits@equality@q)@childResults
+            
+
+
+            let getProps = properties |> List.map (fun prop -> createPropertyGet (prop,t))
+            let setProps = properties |> List.map (fun prop -> createPropertySet (prop,t))
+            let props = getProps@setProps
+
+            (func::acc@inherits@equality@q@props)@childResults
 
 
     (loop mo []) |> List.rev

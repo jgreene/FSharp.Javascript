@@ -77,16 +77,47 @@ Operators.Fst = function (tup) { return tup.Item1; }
 Operators.Snd = function (tup) { return tup.Item2; }
 
 var FSharpOption = {}
-FSharpOption.Some = function (val) {
-    this.IsNone = false;
-    this.IsSome = true;
-    this.Value = val;
-}
+
 FSharpOption.None = function () {
     this.IsNone = true;
     this.IsSome = false;
     this.Value = null;
 }
+
+FSharpOption.None.prototype.get_IsNone = function () {
+    return this.IsNone;
+}
+
+FSharpOption.None.prototype.get_IsSome = function () {
+    return this.IsSome;
+}
+
+FSharpOption.None.prototype.get_Value = function () {
+    return this.Value;
+}
+
+FSharpOption.Some = function (val) {
+    this.IsNone = false;
+    this.IsSome = true;
+    this.Value = val;
+}
+
+FSharpOption.Some.prototype.get_IsNone = function () {
+    return this.IsNone;
+}
+
+FSharpOption.Some.prototype.get_IsSome = function () {
+    return this.IsSome;
+}
+
+FSharpOption.Some.prototype.get_Value = function () {
+    return this.Value;
+}
+
+FSharpOption.get_IsSome = function (x) {
+    return x.get_IsSome()
+}
+
 
 function Range(start, end) {
     this.start = start
@@ -272,9 +303,25 @@ FSharpList.Empty = function () {
     this.Head = null
     this.IsEmpty = true
     this.Tail = null
-    this.Item = function (x) {
+    this.get_Item = function (x) {
         return null
     }
+}
+
+FSharpList.Empty.prototype.get_Length = function () {
+    return this.Length
+}
+
+FSharpList.Empty.prototype.get_Head = function () {
+    return this.Head
+}
+
+FSharpList.Empty.prototype.get_IsEmpty = function () {
+    return this.IsEmpty
+}
+
+FSharpList.Empty.prototype.get_Tail = function () {
+    return this.Tail
 }
 
 FSharpList.Empty.prototype.read = function () {
@@ -289,13 +336,15 @@ FSharpList.Cons = function (list, arg) {
     this.Head = arg;
     this.IsEmpty = false;
     this.Tail = list;
-    this.Item = function (x) {
+    this.get_Item = function (x) {
         if (x == 0)
             return this.Head;
         else
-            return this.Tail.Item(x - 1);
+            return this.Tail.get_Item(x - 1);
     }
 }
+
+FSharpList.Cons.prototype = FSharpList.Empty.prototype
 
 FSharpList.Cons.prototype.read = function () {
     if (this.ReadState == null)
@@ -312,7 +361,7 @@ FSharpList.Cons.prototype.read = function () {
 }
 
 FSharpList.Cons.prototype.get = function () {
-    return this.Item(this.ReadState)
+    return this.get_Item(this.ReadState)
 }
 
 var ListModule = {}
@@ -432,10 +481,27 @@ FSharpMap.Empty = function () {
     this.Head = null
     this.IsEmpty = true
     this.Tail = null
-    this.Item = function (x) {
+    this.get_Item = function (x) {
         return null
     }
 }
+
+FSharpMap.Empty.prototype.get_Count = function () {
+    return this.Count
+}
+
+FSharpMap.Empty.prototype.get_Head = function () {
+    return this.Head
+}
+
+FSharpMap.Empty.prototype.get_IsEmpty = function () {
+    return this.IsEmpty
+}
+
+FSharpMap.Empty.prototype.get_Tail = function () {
+    return this.Tail
+}
+
 
 FSharpMap.Empty.prototype.read = function () {
     return false
@@ -452,19 +518,33 @@ FSharpMap.Empty.prototype.Add = function (value) {
     }
 }
 
+FSharpMap.Empty.prototype.Remove = function (key) {
+    var result = new FSharpMap.Empty()
+    while (this.read()) {
+        var item = this.get()
+        if (item.key != key) {
+            result = new FSharpMap.Cons(result, item)
+        }
+    }
+
+    return result;
+}
+
 FSharpMap.Cons = function (list, arg) {
     this.ReadState = null;
     this.Count = list.Count + 1;
     this.Head = arg;
     this.IsEmpty = false;
     this.Tail = list;
-    this.Item = function (x) {
+    this.get_Item = function (x) {
         if (x == 0)
             return this.Head;
         else
-            return this.Tail.Item(x - 1);
+            return this.Tail.get_Item(x - 1);
     }
 }
+
+FSharpMap.Cons.prototype = FSharpMap.Empty.prototype
 
 FSharpMap.Cons.prototype.read = function () {
     if (this.ReadState == null)
@@ -480,32 +560,12 @@ FSharpMap.Cons.prototype.read = function () {
     return true;
 }
 
-
 FSharpMap.Cons.prototype.get = function () {
-    return this.Item(this.ReadState)
+    return this.get_Item(this.ReadState)
 }
 
 FSharpMap.Cons.prototype.ContainsKey = function (key) {
     return MapModule.ContainsKey(this)(key)
-}
-
-FSharpMap.Cons.prototype.Remove = function (key) {
-    var result = new FSharpMap.Empty()
-    while (this.read()) {
-        var item = this.get()
-        if (item.key != key) {
-            result = new FSharpMap.Cons(result, item)
-        }
-    }
-
-    return result;
-}
-
-FSharpMap.Cons.prototype.Add = function (value) {
-    var self = this;
-    return function (key) {
-        return MapModule.Add(self)(value)(key);
-    }
 }
 
 MapModule = {}
@@ -563,4 +623,44 @@ MapModule.ContainsKey = function (source) {
         return result;
     }
 }
+
+DateTime = function () {
+    this.Year = 0001
+    this.Month = 1
+    this.Day = 1
+    this.Hour = 12
+    this.Minute = 0
+    this.Second = 0
+
+    if (arguments.length == 3) {
+        this.Year = arguments[0]
+        this.Month = arguments[1]
+        this.Day = arguments[2]
+    }
+
+    if (arguments.length == 6) {
+        this.Year = arguments[0]
+        this.Month = arguments[1]
+        this.Day = arguments[2]
+    }
+
+}
+
+DateTime.prototype.toString = function () {
+    var pad = function (number, length) {
+        var str = '' + number;
+        while (str.length < length) {
+            str = '0' + str;
+        }
+
+        return str;
+    }
+
+    var amPm = this.Hour > 12 ? "pm" : "am"
+    return this.Month + "/" + this.Day + "/" + pad(this.Year, 4) + " " + this.Hour + ":" + pad(this.Minute, 2) + ":" + pad(this.Second, 2) + " " + amPm;
+}
+
+DateTime.Now = function () { return new DateTime(getYear(), getMonth(), getDate(), getHours(), getMinutes(), getSeconds()) }
+
+DateTime.MinValue = new DateTime()
 

@@ -585,3 +585,16 @@ type QuotationsTests() =
                 let first = array |> Array.fold (fun acc next -> next + "<br/>" + acc) ""
                 let second = array |> Array.fold (fun acc next -> next + "," + acc) ""
                 emit (first + second) @>
+
+    [<Test>]
+    member this.``Property get uses method call get_``() =
+        test <@ let item = new class2("blah", 1)
+                let result = item.Name
+                emit (result) @>
+
+    [<Test>]
+    member this.``Property set uses method call set_``() =
+        test <@ let item = new class2("blah", 1)
+                item.Age <- 18
+                emit (item.Age) @>
+
