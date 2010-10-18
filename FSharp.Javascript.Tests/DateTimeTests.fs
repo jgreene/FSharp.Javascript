@@ -110,3 +110,12 @@ type DateTimeTests() =
                 let date = DateTime.TryParse2(input)
                 emit date.IsSome
                 @>
+
+    [<Test>]
+
+    member this.``Date equals Now - 18 years``() =
+        test <@ let date = DateTime.Parse("06/12/1980")
+                if date <= DateTime.Now.AddYears(-18) then
+                    emit true
+                else
+                    emit false @>

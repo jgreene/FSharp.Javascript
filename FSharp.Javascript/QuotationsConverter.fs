@@ -118,54 +118,52 @@ let convertToAst quote =
                                     //| _ -> Identifier(y.Name, false)
                                     | _ -> failwith "invalid value match"
         | Patterns.Call(exprs, m, args) ->
+            //this rewrites the arguments to make it more javascript friendly
+            let getArgs args' =
+                let rec loop arg lets =
+                    match arg with
+                    | Patterns.Let(x,y,z) ->
+                        loop z (lets |> Map.add x y)
+                    | Patterns.Call(a,m,cargs) ->
+                        let newArgs = [for carg in cargs -> 
+                                        match carg with
+                                        | Var x when (lets.ContainsKey x) ->
+                                            let newArg = lets |> Map.find (x)
+                                            newArg
+                                        | _ -> carg]
+
+                        if a.IsSome then
+                            let a' = match a.Value with
+                                    | Var x when (lets.ContainsKey x) ->
+                                        lets |> Map.find (x)
+                                    | _ -> a.Value
+                            Expr.Call(a', m, newArgs)
+                        else
+                            Expr.Call(m, newArgs)
+                    | Patterns.Lambda(_, Patterns.Let(_,_,_)) ->
+                        arg
+                    | Patterns.Lambda(v,e) ->
+                        Expr.Lambda(v, (loop e lets))
+                    | _ -> arg
+
+                [for a in args' -> (loop a Map.empty)]
+
+            let args = (getArgs args)
+
             match m.Name with
-            | n when isBinaryOp n ->
-                let left = traverse args.[0]
-                let right = traverse args.[1]
-                let op = getOperator m.Name
-                BinaryOp(left, right, op.Value)
+//            | n when isBinaryOp n ->
+//                let left = traverse args.[0]
+//                let right = traverse args.[1]
+//                let op = getOperator m.Name
+//                BinaryOp(left, right, op.Value)
             | n when n = "GetArray" -> 
                 let left = traverse args.[0]
                 let right = traverse args.[1]
                 IndexAccess(left, right)
-//            | n when n.StartsWith "get_" ->
-//                let arguments = [for a in args do yield traverse a] |> List.head
-//
-//                MemberAccess(m.Name.Replace("get_", ""), arguments)
 
             | _ -> 
 
-                //this rewrites the arguments to make it more javascript friendly
-                let getArgs args' =
-                    let rec loop arg lets =
-                        match arg with
-                        | Patterns.Let(x,y,z) ->
-                            loop z (lets |> Map.add x y)
-                        | Patterns.Call(a,m,cargs) ->
-                            let newArgs = [for carg in cargs -> 
-                                            match carg with
-                                            | Var x when (lets.ContainsKey x) ->
-                                                let newArg = lets |> Map.find (x)
-                                                newArg
-                                            | _ -> carg]
-
-                            if a.IsSome then
-                                let a' = match a.Value with
-                                        | Var x when (lets.ContainsKey x) ->
-                                            lets |> Map.find (x)
-                                        | _ -> a.Value
-                                Expr.Call(a', m, newArgs)
-                            else
-                                Expr.Call(m, newArgs)
-                        | Patterns.Lambda(_, Patterns.Let(_,_,_)) ->
-                            arg
-                        | Patterns.Lambda(v,e) ->
-                            Expr.Lambda(v, (loop e lets))
-                        | _ -> arg
-
-                    [for a in args' -> (loop a Map.empty)]
-
-                let args = getArgs args
+                
 
                 let definition = Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(m)
 
@@ -210,7 +208,7 @@ let convertToAst quote =
 
                         loop expr 0 []
                         
-                    | None -> [for a in args' -> traverse a]
+                    | None -> [for a in args' -> traverse a] 
 
                 let arguments = getArguments (definition, args)
 

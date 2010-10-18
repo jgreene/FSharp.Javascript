@@ -17,7 +17,90 @@ registerNamespace('Microsoft.FSharp.Core')
 registerNamespace('Microsoft.FSharp.Collections')
 
 Microsoft.FSharp.Core.Operators = {
-    op_Equality : function (one) {
+    op_Addition: function (x) {
+        return function (y) {
+            if (x.op_Addition) {
+                return x.op_Addition(y)
+            }
+            return y + x;
+        }
+    },
+
+    op_Subtraction: function (x) {
+        return function (y) {
+            if (x.op_Subtraction) {
+                return x.op_Subtraction(y)
+            }
+            return y - x;
+        }
+    },
+
+    op_Multiply : function(x){
+        return function(y){
+            if(x.op_Multiply){
+                return x.op_Multiply(y);
+            }
+
+            return y * x;
+        }
+    },
+
+    op_Division: function (x) {
+        return function (y) {
+            if (x.op_Division) {
+                return x.op_Division(y);
+            }
+
+            return y / x;
+        }
+    },
+
+    op_LessThanOrEqual: function (x) {
+        return function (y) {
+            if (x.op_LessThanOrEqual) {
+                return x.op_LessThanOrEqual(y)
+            }
+
+            return y <= x;
+        }
+    },
+
+    op_LessThan: function (x) {
+        return function (y) {
+            if (x.op_LessThan) {
+                return x.op_LessThan(y)
+            }
+
+            return y < x;
+        }
+    },
+
+    op_GreaterThan: function (x) {
+        return function (y) {
+            if (x.op_GreaterThan) {
+                return x.op_GreaterThan(y)
+            }
+
+            return y > x;
+        }
+    },
+
+    op_GreaterThanOrEqual: function (x) {
+        return function (y) {
+            if (x.op_GreaterThanOrEqual) {
+                return x.op_GreaterThanOrEqual(y)
+            }
+            return y >= x;
+        }
+    },
+
+    op_Inequality: function (x) {
+        return function (y) {
+            return Microsoft.FSharp.Core.Operators.op_Equality(y)(x) == false;
+        }
+    },
+
+    op_Equality: function (one) {
         return function (two) {
             if (one == null && two == null)
                 return true;
@@ -33,11 +116,11 @@ Microsoft.FSharp.Core.Operators = {
         };
     },
 
-    ToDouble : function (x) {
+    ToDouble: function (x) {
         return x;
     },
 
-    op_Append : function (item1) {
+    op_Append: function (item1) {
         return function (item2) {
             var list = item1;
             var list2 = Microsoft.FSharp.Collections.ListModule.Reverse(item2)
@@ -50,11 +133,11 @@ Microsoft.FSharp.Core.Operators = {
         }
     },
 
-    FailWith : function (msg) {
+    FailWith: function (msg) {
         throw msg
     },
 
-    FailurePattern : function (msg) {
+    FailurePattern: function (msg) {
         if (msg != null) {
             return new Microsoft.FSharp.Core.FSharpOption.Some(msg)
         }
@@ -63,58 +146,61 @@ Microsoft.FSharp.Core.Operators = {
         }
     },
 
-    op_PipeRight : function (func) {
-        return function(item){
+    op_PipeRight: function (func) {
+        return function (item) {
             return func(item)
         }
     },
 
-    Ignore : function (value) {
+    Ignore: function (value) {
         return null
     },
 
-    Fst : function (tup) { return tup.Item1; },
-    Snd : function (tup) { return tup.Item2; },
+    Fst: function (tup) { return tup.Item1; },
+    Snd: function (tup) { return tup.Item2; },
 
-    op_Range : function (end) {
+    op_Range: function (end) {
         return function (start) {
             return new Range(start, end)
         }
     },
 
-    CreateSequence : function (source) {
+    CreateSequence: function (source) {
         return new Sequence(source)
     },
 
-    ToInt : function (x) {
+    ToInt: function (x) {
         if (x instanceof System.Enum)
             return x.Integer;
 
         return x;
     },
 
-    ToString : function (x) {
+    ToString: function (x) {
         if (x instanceof System.Enum)
             return x.Text;
 
         return x;
     },
 
-    Reference : function (x) {
+    Reference: function (x) {
         this.Value = x;
+        this.get_Value = function () {
+            return this.Value;
+        }
     },
 
-    Ref : function (x) {
+    Ref: function (x) {
         return new Microsoft.FSharp.Core.Operators.Reference(x);
     },
 
-    op_ColonEquals : function (x) {
+    op_ColonEquals: function (x) {
         return function (item) {
             item.Value = x;
         }
     },
 
-    op_Dereference : function (x) {
+    op_Dereference: function (x) {
         return x.Value;
     }
 
@@ -342,11 +428,15 @@ Array.prototype.get = function () {
     return this[this.position]
 }
 
+Array.prototype.get_Length = function () {
+    return this.Length;
+}
+
 
 registerNamespace('Microsoft.FSharp.Collections');
 
 Microsoft.FSharp.Collections.ArrayModule = {
-    Fold : function (source) {
+    Fold: function (source) {
         return function (acc) {
             return function (func) {
                 //list = ListModule.Reverse(list)
@@ -357,6 +447,42 @@ Microsoft.FSharp.Collections.ArrayModule = {
 
                 return acc
             }
+        }
+    },
+
+    Map: function (source) {
+        return function (func) {
+            var newArr = []
+            while (source.read()) {
+                var item = source.get()
+                var result = func(item)
+                newArr.push(result)
+            }
+
+            return newArr
+        }
+    },
+
+    Iterate: function (source) {
+        return function (func) {
+            while (source.read()) {
+                var item = source.get()
+                func(item)
+            }
+        }
+    },
+
+    Filter: function (source) {
+        return function (func) {
+            var newArr = []
+            while (source.read()) {
+                var item = source.get()
+                if (func(item)) {
+                    newArr.push(item)
+                }
+            }
+
+            return newArr;
         }
     }
 }
@@ -768,6 +894,42 @@ System.DateTime = function () {
 
         return result;
     };
+
+    var getJavascriptDate = function (x) {
+        var date = new Date(x.Year, (x.Month - 1), x.Day, x.Hour, x.Minute, x.Second)
+
+        return date;
+    }
+
+    this.op_GreaterThan = function (x) {
+        var date1 = getJavascriptDate(this)
+        var date2 = getJavascriptDate(x)
+
+        return date2 > date1;
+    }
+
+    this.op_LessThan = function (x) {
+        var date1 = getJavascriptDate(this)
+        var date2 = getJavascriptDate(x)
+
+        return date2 < date1;
+    }
+
+    this.op_GreaterThanOrEqual = function (x) {
+        var date1 = getJavascriptDate(this)
+        var date2 = getJavascriptDate(x)
+
+        return date2 >= date1;
+    }
+
+    this.op_LessThanOrEqual = function (x) {
+        var date1 = getJavascriptDate(this)
+        var date2 = getJavascriptDate(x)
+
+        return date2 <= date1;
+    }
+
+
 }
 
 System.DateTime.get_Now = function () {

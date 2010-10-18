@@ -10,7 +10,7 @@
 
     <p>Upon submission your javascript will be run in the browser.  You may use the jquery api provided in the FSharp.Javascript project to manipulate the elements on this page.  It is suggested that you use the id of "output" so as not to break the other functionality on this page.</p>
 
-    <p>Please note that free standing code that runs when a module is initialized will not be picked up by the compiler.  Instead please write a main() method and this page will call it automatically for you.</p>
+    <p>Please note that free standing code that runs when a module is initialized will not be picked up by the compiler.  Instead please write a main() method and it will get called automatically.</p>
 
     <%= Html.ValidationSummary() %>
     <form action="<%= this.ResolveUrl("~/home/submit") %>" method="post">
