@@ -90,14 +90,16 @@ let rewriteBlockToSingleStatement node =
 
 let cleanName (n:string) = if n = null then "" else n.Replace("|", "").Replace("`1", "").Replace("`2", "").Replace("@", "")
 
-let getMemberAccess (name:string, t:System.Type) =
+let getMemberAccess (name:string, t:System.Type, nameSpace:string) =
     let rec loop (typ:System.Type) =
         if typ.DeclaringType = null then
-           Identifier(cleanName typ.Name, false)
+            let name = if nameSpace = "" || nameSpace = null then typ.Name else nameSpace + "." + typ.Name
+            Identifier(cleanName (name), false)
         else
-           MemberAccess(cleanName typ.Name, loop typ.DeclaringType)
+            MemberAccess(cleanName typ.Name, loop typ.DeclaringType)
 
     if t = null then
+        let name = if nameSpace = "" || nameSpace = null then name else nameSpace + "." + name
         Identifier(cleanName name, false)
     else
         MemberAccess(cleanName name, loop t)
@@ -228,7 +230,7 @@ let convertToAst quote =
                     let left = traverse exprs.Value
                     getCallNode (MemberAccess(realName, left))
                 | None -> 
-                    let node = getMemberAccess (m.Name, m.DeclaringType)
+                    let node = getMemberAccess (m.Name, m.DeclaringType, m.DeclaringType.Namespace)
                     
                     getCallNode node
 
@@ -294,12 +296,12 @@ let convertToAst quote =
             let argNames = t.GetProperties() |> Array.toList
 
             let ar = [for i in [0..(args.Length - 1)] do yield (traverse args.[i])] |> List.rev
-            New(getMemberAccess (t.Name, t.DeclaringType), ar, None)
+            New(getMemberAccess (t.Name, t.DeclaringType, t.Namespace), ar, None)
 
         | Patterns.NewObject(i, args) ->
             let argNames = i.GetParameters()
             let ar = [for a in args do yield traverse a] |> List.rev
-            New(getMemberAccess (i.DeclaringType.Name, i.DeclaringType.DeclaringType), ar, None)
+            New(getMemberAccess (i.DeclaringType.Name, i.DeclaringType.DeclaringType, i.DeclaringType.Namespace), ar, None)
         | Patterns.NewTuple(tup) ->
             let args = [for t in tup do yield traverse t] |> List.rev
             New(Identifier("Tuple", false), args, None)
@@ -314,7 +316,7 @@ let convertToAst quote =
                     let left = traverse l.Value
                     Call(MemberAccess("get_" + i.Name, left), [])
             else
-                Call(getMemberAccess ("get_" + i.Name, i.DeclaringType), [])
+                Call(getMemberAccess ("get_" + i.Name, i.DeclaringType, i.DeclaringType.Namespace), [])
         | Patterns.PropertyGet(l,i,r) ->
             let left = if l.IsSome then Some(traverse l.Value) else None
             let args = [for a in r -> traverse a]
@@ -325,19 +327,19 @@ let convertToAst quote =
                 let left = traverse l.Value
                 MemberAccess(i.Name, left)
             else
-                MemberAccess(i.Name, Identifier(i.DeclaringType.Name, false)) 
+                getMemberAccess (i.Name, i.DeclaringType, i.DeclaringType.Namespace)
         | Patterns.TryWith(a,b,c,d,e) -> 
             let tryBody = traverse a
             let withBody = traverse e
             let catch = Catch(Identifier(b.Name, false), rewriteBodyWithReturn withBody)
             Call(Function(Try(rewriteBodyWithReturn tryBody, Some(catch), None), [], None), [])
         | Patterns.NewUnionCase(i, h::[]) -> 
-            New(getMemberAccess (i.Name, i.DeclaringType), [traverse h], None)
+            New(getMemberAccess (i.Name, i.DeclaringType, i.DeclaringType.Namespace), [traverse h], None)
         | Patterns.NewUnionCase(i, l) -> 
-            New(getMemberAccess (i.Name, i.DeclaringType), [for a in l do yield traverse a], None)
+            New(getMemberAccess (i.Name, i.DeclaringType, i.DeclaringType.Namespace), [for a in l do yield traverse a], None)
         | Patterns.UnionCaseTest(expr, info) ->
             let left = traverse expr
-            InstanceOf(left, getMemberAccess (info.Name, info.DeclaringType))
+            InstanceOf(left, getMemberAccess (info.Name, info.DeclaringType, info.DeclaringType.Namespace))
         | Patterns.Sequential(l,r) ->
             let left = traverse l
             let right = traverse r
@@ -351,7 +353,7 @@ let convertToAst quote =
             match t.Name with
             | "Int32" | "Double" -> BinaryOp(TypeOf(left), String("number", '"'), ExpressionType.Equal)
             | "String" -> BinaryOp(TypeOf(left), String("string", '"'), ExpressionType.Equal)
-            | _ -> InstanceOf(left, getMemberAccess (t.Name, t.DeclaringType))
+            | _ -> InstanceOf(left, getMemberAccess (t.Name, t.DeclaringType, t.Namespace))
             //BinaryOp(MemberAccess("constructor", left), getMemberAccess (t.Name, t.DeclaringType), ExpressionType.Equal)
         | Patterns.DefaultValue(x) ->
             match x with

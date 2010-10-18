@@ -1,8 +1,10 @@
 ﻿module TestModule
 
 let test (quote:Microsoft.FSharp.Quotations.Expr) = 
-    let typ = System.Type.GetType("TestModule, FSharp.Javascript.Tests")
-    QuotationsTestHelper.testWithType typ quote
+    let typ = System.Type.GetType "TestModule, FSharp.Javascript.Tests"
+    
+    //let typ2 = System.Type.GetType "FSharp.Javascript.Library, FSharp.Javascript"
+    QuotationsTestHelper.testWithType [typ] quote
 
 
 type record = { x:int; y:int; }

@@ -1,8 +1,8 @@
-﻿module ComputationModule
+﻿module TestNamespace.ComputationModule
 
 let test (quote:Microsoft.FSharp.Quotations.Expr) = 
-    let typ = System.Type.GetType("ComputationModule, FSharp.Javascript.Tests")
-    QuotationsTestHelper.testWithType typ quote
+    let typ = System.Type.GetType("TestNamespace.ComputationModule, FSharp.Javascript.Tests")
+    QuotationsTestHelper.testWithType [typ] quote
 
 type MaybeBuilder() =
     [<ReflectedDefinition>]

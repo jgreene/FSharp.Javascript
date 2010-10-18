@@ -15,6 +15,8 @@ open Microsoft.FSharp.Quotations.DerivedPatterns
 open Microsoft.FSharp.Linq
 open Microsoft.FSharp.Linq.QuotationEvaluation
 
+open Microsoft.FSharp.Control
+
 open System.Diagnostics
 open System.IO
 
@@ -29,26 +31,26 @@ let emit x = x
 let getRandomFileName () = System.Guid.NewGuid().ToString() + ".js"
 
 let run (source:string) =
+    
     let fileName = getRandomFileName ()
     let filePath = "C:\\Users\\nephesh\\" + fileName
     File.WriteAllText(filePath, source)
 
     let info = new ProcessStartInfo("C:\\cygwin\\bin\\bash", "--login -i -c \"node " + fileName + "\"")
-    info.CreateNoWindow <- false
-    info.UseShellExecute <- true
+    info.CreateNoWindow <- true
+    info.UseShellExecute <- false
     info.WindowStyle <- ProcessWindowStyle.Hidden
+    info.RedirectStandardOutput <- true
 
     use proc = Process.Start(info)
-
+    
+    let testResult = proc.StandardOutput.ReadLine()
     proc.WaitForExit()
+    
 
     File.Delete(filePath)
 
-    let testResultPath = "C:\\Users\\nephesh\\" + fileName + "Result.js"
-    let result = File.ReadAllText(testResultPath)
-    
-    File.Delete(testResultPath)
-    result
+    testResult
 
 //type mydel = delegate of obj -> StringBuilder
 //
@@ -60,7 +62,7 @@ let run (source:string) =
 //    engine.SetFunction("emit", testDel).Run(source) |> ignore
 //    emitter.ToString()
 
-let testWithType (ty:System.Type) quote =
+let testWithType (typs:System.Type list) quote =
     let testModule = true
     print quote
     print "--------------------------------------------------------------"
@@ -68,11 +70,16 @@ let testWithType (ty:System.Type) quote =
     print ast
     print "--------------------------------------------------------------"
     let j1 = (getJavascript ast)
-    let moduleAst = getAstFromType ty 
-    let j2 = getJavascript moduleAst
-    let library = System.IO.File.ReadAllText("fsharp.js") + System.Environment.NewLine + System.IO.File.ReadAllText("tests.js")
-    let javascript = (library + System.Environment.NewLine + j2 + System.Environment.NewLine + System.Environment.NewLine + j1)
-    print j2
+
+    let moduleScript = typs |> List.fold (fun acc next -> (FSharp.Javascript.Converter.convertModule next) + System.Environment.NewLine + acc) ""
+
+    let files = ["fsharp.js";"tests.js";"library.js"]
+
+    let library = files |> List.fold (fun acc next -> System.IO.File.ReadAllText(next) + System.Environment.NewLine + acc) ""
+
+    //let library = System.IO.File.ReadAllText("fsharp.js") + System.Environment.NewLine + System.IO.File.ReadAllText("tests.js")
+    let javascript = (library + System.Environment.NewLine + moduleScript + System.Environment.NewLine + System.Environment.NewLine + j1)
+    print moduleScript
     print "--------------------------------------------------------------"
     print j1
     //print javascript
@@ -88,3 +95,4 @@ let testWithType (ty:System.Type) quote =
     print System.Environment.NewLine
     print ("javascript result: " + javascriptResult')
     Assert.IsTrue(result)
+                                

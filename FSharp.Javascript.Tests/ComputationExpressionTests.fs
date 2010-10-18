@@ -2,7 +2,7 @@
 
 open NUnit.Framework
 open FSharp.Javascript.Printer
-open ComputationModule
+open TestNamespace.ComputationModule
 open QuotationsTestHelper
 
 [<TestFixture>]

@@ -3,7 +3,7 @@ namespace FSharp.Javascript.Tests
 
 open NUnit.Framework
 open FSharp.Javascript.Printer
-open ComputationModule
+open TestNamespace.ComputationModule
 open QuotationsTestHelper
 open TestModule
 open FSharp.Javascript.Dom
