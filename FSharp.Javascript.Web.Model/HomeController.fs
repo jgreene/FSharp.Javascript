@@ -26,7 +26,7 @@ let fact() = let result = factorial 2
              print result
 
 [<ReflectedDefinition>]
-let init() = jquery(document).ready(fun x -> fact() )"
+let main() = jquery(document).ready(fun x -> fact() )"
         base.View(view)
 
     [<ValidateInput(false)>]
@@ -35,12 +35,6 @@ let init() = jquery(document).ready(fun x -> fact() )"
         let errors = fst result
         let javascript = snd result
         if javascript.IsSome then
-            let getModuleName (script:string) =
-                let script = script.Replace("var", "").Trim()
-                let moduleName = script.Substring(0, script.IndexOf(" "))
-                moduleName
-
-            view.ModuleName <- getModuleName javascript.Value
             view.Javascript <- javascript.Value
             base.View("Index", view)
         else

@@ -144,8 +144,12 @@ let getAstFromType (mo:System.Type) =
             
             
             let d = Call(Identifier("registerNamespace", false), [Ast.String(moduleName, '"')])
-            //let d = Assign(Identifier(t.Name, true), New(Null, [], Some([])))
-            [d; Block((childResults@Block(result@props)::acc) |> List.rev)]
+            
+
+            let mainCall = Ast.If(Identifier(moduleName + ".main", false), Call(Identifier(moduleName + ".main", false), []), None, false)
+
+
+            [d; Block((childResults@Block(result@props)::acc) |> List.rev);mainCall]
 
         elif FSharpType.IsUnion t then
             let cases = FSharpType.GetUnionCases t
