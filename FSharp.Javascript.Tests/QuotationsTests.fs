@@ -598,3 +598,33 @@ type QuotationsTests() =
                 item.Age <- 18
                 emit (item.Age) @>
 
+    [<Test>]
+    member this.``Array map with tuple`` () =
+        test <@ let arr = [| (1,true);(2,false);(3,true)|]
+                let result = arr 
+                            |> Array.map (fun (x,y) -> if y then Some x else None)
+                            |> Array.filter (fun x -> x.IsSome)
+
+                emit result.[0].Value @>
+
+    [<Test>]
+    member this.``List reverse on single element list does not empty list``() =
+        test <@ let list = [1]
+                let result = list |> List.fold (fun acc next ->  acc + next.ToString()) ""
+                emit (result)
+                @>
+
+    [<Test>]
+    member this.``Pattern match does not change scope of value``() =
+        test <@ let test = "Test"
+                let value = "1"
+                match test with
+                | "blah" -> 
+                    let value = "2"
+                    emit value
+                | "Test" ->
+                    emit value
+                | _ -> emit value @>
+                    
+
+

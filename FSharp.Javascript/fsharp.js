@@ -592,15 +592,16 @@ Microsoft.FSharp.Collections.ListModule = {
 
     Exists: function (list) {
         return function (func) {
+            var result = false;
             while (list.read()) {
                 var item = list.get()
 
-                var result = func(item)
-                if (result == true)
-                    return true;
+                var temp = func(item)
+                if (temp == true)
+                    result = true;
             }
 
-            return false;
+            return result;
         }
     },
 

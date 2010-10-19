@@ -53,3 +53,11 @@ type System.Double with
             if success then Some result else None
         with
         | _ -> None
+
+type System.Boolean with
+    static member TryParse2(x:string) =
+        try
+            let success,result = Boolean.TryParse(x)
+            if success then Some result else None
+        with
+        | _ -> None

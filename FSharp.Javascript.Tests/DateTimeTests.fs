@@ -112,10 +112,9 @@ type DateTimeTests() =
                 @>
 
     [<Test>]
-
     member this.``Date equals Now - 18 years``() =
-        test <@ let date = DateTime.Parse("06/12/1980")
-                if date <= DateTime.Now.AddYears(-18) then
-                    emit true
+        test <@ let date = DateTime.Parse("06/12/2005")
+                if date >= DateTime.Now.AddYears(-18) then
+                    emit "You must be eighteen years or older."
                 else
-                    emit false @>
+                    emit "You are older than 18 years" @>
