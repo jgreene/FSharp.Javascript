@@ -73,7 +73,7 @@ let testWithType (typs:System.Type list) quote =
 
     let moduleScript = typs |> List.fold (fun acc next -> (FSharp.Javascript.Converter.convertModule next) + System.Environment.NewLine + acc) ""
 
-    let files = ["fsharp.js";"tests.js";"library.js"]
+    let files = ["FSharp.Javascript.js";"tests.js";"FSharp.Javascript.Library.js"]
 
     let library = files |> List.fold (fun acc next -> System.IO.File.ReadAllText(next) + System.Environment.NewLine + acc) ""
 

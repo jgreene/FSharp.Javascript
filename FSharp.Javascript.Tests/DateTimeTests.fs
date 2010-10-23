@@ -118,3 +118,9 @@ type DateTimeTests() =
                     emit "You must be eighteen years or older."
                 else
                     emit "You are older than 18 years" @>
+
+    [<Test>]
+    member this.``TryParse2 with invalid data returns None``() =
+        test <@ let input = "asfd"
+                let date = DateTime.TryParse2(input)
+                emit date.IsSome @>

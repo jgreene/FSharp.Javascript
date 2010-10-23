@@ -54,6 +54,14 @@ type System.Double with
         with
         | _ -> None
 
+type System.Single with
+    static member TryParse2(x:string) =
+        try
+            let success,result = Single.TryParse(x)
+            if success then Some result else None
+        with
+        | _ -> None
+
 type System.Boolean with
     static member TryParse2(x:string) =
         try

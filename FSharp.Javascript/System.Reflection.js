@@ -1,4 +1,0 @@
-﻿registerNamespace('System.Reflection')
-
-
-

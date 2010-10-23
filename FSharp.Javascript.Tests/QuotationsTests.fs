@@ -625,6 +625,12 @@ type QuotationsTests() =
                 | "Test" ->
                     emit value
                 | _ -> emit value @>
+
+    [<Test>]
+    member this.``Record with array of tuples``() =
+        test <@ let r = { url = ""; arguments = [|("1", "2"); ("3", "$")|]; }
+                emit r.url
+            @>
                     
 
 

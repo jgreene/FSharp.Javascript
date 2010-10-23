@@ -55,12 +55,12 @@ let rewriteBody body =
     | _ -> body
 
 let rewriteBodyWithReturn body =
-    let result = rewriteBody body
-    match result with
-    | Block(h::t) -> 
-        //this extra return is here to fix variable scoping in javascript.
-        Return(Call(Function(Block(Return(h)::t), [], None), []))
-    | _ -> Return(body)
+        let result = rewriteBody body
+        match result with
+        | Block(h::t) -> 
+            //this extra return is here to fix variable scoping in javascript.
+            Return(Call(Function(Block(Return(h)::t), [], None), []))
+        | _ -> Return(body)
 
 let rewriteBlockToSingleStatement node =
     match node with
@@ -235,6 +235,8 @@ let convertToAst quote =
                     getCallNode node
 
         | Patterns.IfThenElse(s,b,e) ->
+
+            
             
             let els = rewriteBodyWithReturn (traverse e)
 
@@ -382,7 +384,9 @@ let convertToAst quote =
         | Patterns.ForIntegerRangeLoop(v, a, b, c) ->
             let oper = BinaryOp(Identifier(v.Name, false), traverse b, ExpressionType.LessThanOrEqual)
             ForStepNode(Assign(Identifier(v.Name, true), traverse a), oper, PostfixOperator(Identifier(v.Name, false), ExpressionType.PostIncrementAssign), traverse c)
-                
+           
+        | Patterns.Quote(x) ->
+            traverse x     
         | ShapeVar v -> Identifier(cleanName v.Name, false)
             
         

@@ -22,6 +22,11 @@ with
     [<ReflectedDefinition>]
     member this.MultipleArgsOnRecord(a,b) = a - b
 
+type recordWithArrayOfTuples = {
+    url : string;
+    arguments : (string * string) array;
+}
+
 type class1(name) =
     member this.Name = name
     [<ReflectedDefinition>]

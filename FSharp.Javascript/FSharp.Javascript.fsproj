@@ -43,19 +43,18 @@
     <Compile Include="Dom.fs" />
     <Compile Include="Jquery.fs" />
     <Compile Include="Library.fs" />
-    <Content Include="fsharp.js">
+    <Content Include="FSharp.Javascript.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dom.js">
+    <Content Include="FSharp.Javascript.Dom.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="fsharp-jquery.js">
+    <Content Include="FSharp.Javascript.Jquery.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Library.js">
+    <Content Include="FSharp.Javascript.Library.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="System.Reflection.js" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
