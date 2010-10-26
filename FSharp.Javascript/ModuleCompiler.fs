@@ -156,22 +156,29 @@ let getAstFromType (mo:System.Type) =
             let rdr = [for c in cases do yield FSharpValue.PreComputeUnionConstructorInfo c]
             let rd = [for r in rdr do yield (r,r.GetParameters())]
 
+            let cleanName (name:string) =
+                name.Replace("New", "").Replace("get_", "")
+
             let createPropertyGet (property:ParameterInfo, r:MethodInfo) =
                 Assign(MemberAccess("get_" + camelCase(property.Name),
                         MemberAccess("prototype", 
-                            MemberAccess(r.Name.Replace("New",""), 
+                            MemberAccess(cleanName r.Name, 
                                 getMemberAccess(t.Name, t.DeclaringType, t.Namespace)))),
                                     Function(Return(Identifier("this." + camelCase(property.Name), false)), [], None))
 
+            
+
             let func = [for (r,parameters) in rd do yield! 
+                                                        let name = cleanName r.Name in
                                                         let values = [for p in parameters do yield (Identifier(p.Name, false), Assign(MemberAccess(camelCase(p.Name), Identifier("this", false)), Identifier(p.Name,false)))] in
-                                                        let construct = Assign(MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType, t.Namespace)), 
+                                                        let construct = Assign(MemberAccess(name, getMemberAccess(t.Name, t.DeclaringType, t.Namespace)), 
                                                                                 Function(Block( [for (par,prop) in values do yield prop]), [for (par,prop) in values do yield par], None)) in
 
-                                                        let inheritance = Assign(MemberAccess("prototype", MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType, t.Namespace))), 
-                                                                                 MemberAccess("prototype", getMemberAccess(t.Name, t.DeclaringType, t.Namespace))) in
+                                                        let inheritance = Assign(MemberAccess("prototype", MemberAccess(name, getMemberAccess(t.Name, t.DeclaringType, t.Namespace))), 
+                                                                                 New(getMemberAccess(t.Name, t.DeclaringType, t.Namespace), [], None)) in
+                                                                                 //MemberAccess("prototype", getMemberAccess(t.Name, t.DeclaringType, t.Namespace))) in
 
-                                                        let equals = Assign(MemberAccess("Equality", MemberAccess("prototype", MemberAccess(r.Name.Replace("New",""), getMemberAccess(t.Name, t.DeclaringType, t.Namespace)))),
+                                                        let equals = Assign(MemberAccess("Equality", MemberAccess("prototype", MemberAccess(cleanName r.Name, getMemberAccess(t.Name, t.DeclaringType, t.Namespace)))),
                                                                             getEqualityFunction (parameters |> Array.map (fun p -> p.Name) |> Array.toList) ) in
                                                         
                                                         let props = parameters |> Array.map (fun prop -> createPropertyGet (prop,r)) |> Array.toList in

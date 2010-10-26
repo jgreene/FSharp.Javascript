@@ -61,6 +61,10 @@ type union =
 | Third of bool
 | Fourth of int * int
 
+type simpleUnion =
+| One
+| Two
+
 [<ReflectedDefinition>]
 let (|TestPattern|_|) input = 
     match input with

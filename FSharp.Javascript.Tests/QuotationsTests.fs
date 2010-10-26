@@ -160,6 +160,13 @@ type QuotationsTests() =
                 emit (b) @>
 
     [<Test>]
+    member this.``Pattern matching on simpleUnion``() =
+        test <@ let t = One
+                match t with
+                | One -> emit true
+                | Two -> emit false @>
+
+    [<Test>]
     member this.``IfThenElse Statement with body``() =
         test <@ let t = true
                 let result = if t then
