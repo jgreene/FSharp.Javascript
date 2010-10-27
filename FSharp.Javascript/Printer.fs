@@ -130,9 +130,10 @@ let getJavascript ast =
             name::"."::n@acc
         | Call(n,args) ->
             let node = match n with
-                        | Function(_,_,_) -> ")"::(traverse n [] indent)@("("::[])
-                        | _ -> traverse n [] 0
-            let arguments = ([for a in args do yield! ","::(traverse a [] 0)] |> List.rev |> String.concat "").Trim([|','|])
+                        //this handles calling an anonymous function
+                        | Function(_,_,_) -> ")"::(traverse n [] (indent))@("("::[])
+                        | _ -> traverse n [] indent
+            let arguments = ([for a in args do yield! ","::(traverse a [] indent)] |> List.rev |> String.concat "").Trim([|','|])
             ")"::arguments::"("::node@acc
         | Catch(t,b) ->
             let target = traverse t [] 0
