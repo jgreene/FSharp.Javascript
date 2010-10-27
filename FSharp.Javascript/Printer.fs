@@ -45,14 +45,28 @@ let getTab indent = ({0..indent} |> Seq.filter (fun x -> x <> 0) |> Seq.map (fun
 let trim (x:string) =
     x.Trim([|' '; '\n'; '\t'; '\r'; ','|])
 
+let compactBlock block =
+    let rec loop node acc =
+        match node with
+        | Block(list) -> [for l in list do yield! loop l acc]
+        | _ -> node::acc
+
+    loop block []
 
 let getJavascript ast =
     let getLine = System.Environment.NewLine
     let rec getBody (nodes:node list) char indent =
-        let getIndent = getTab (indent + 1)
+        let getIndent = getTab (indent)
         let getDedent = getTab (indent - 1)
         let result = [for n in nodes do yield! getLine::char::(traverse n [] (indent + 1))@[getIndent]]
         result
+
+    and traverseReturnOrBody (node:node) indent =
+        let getIndent = getTab (indent)
+        let getDedent = getTab (indent - 1)
+        match node with
+        | Return x -> (traverse node [] indent)@[getIndent]
+        | _ -> traverse node [] (indent)
     and traverse (node:node) acc indent =
         let getIndent = getTab (indent)
         let getDedent = getTab (indent - 1)
@@ -60,7 +74,7 @@ let getJavascript ast =
         | Ignore -> acc
         | Assign(l,r) -> 
             let left = traverse l [] indent
-            let right = traverse r [] indent
+            let right = traverse r [] (indent)
             right@(" = "::left)@(acc)
         | AutoProperty(n,v) ->
             let value = traverse v [] indent
@@ -73,16 +87,17 @@ let getJavascript ast =
         | Identifier(n,l) -> if l then "var " + n::acc else n::acc
         | Number(i,f) -> if i.IsSome then ")"::(i.Value.ToString())::"("::acc else ")"::(sprintf "%f" f.Value)::"("::acc
         | Function(b,args, n) ->
-            let body = traverse b [] indent
+            let body = traverseReturnOrBody b indent
             let arguments = [for a in args do yield! (traverse a [] 0)] |> String.concat ","
             
             if n.IsSome then
-                getIndent + "}"::body@(getLine::"){"::arguments::"function " + n.Value + "("::acc)
+                getLine + getDedent + "}"::body@(getLine::"){"::arguments::"function " + n.Value + "("::acc)
             else
-                getIndent + "}"::body@(getLine::"){"::arguments::"function("::acc)
+                getLine + getDedent + "}"::body@(getLine::"){"::arguments::"function("::acc)
         | Block(nodes) ->
+            let compactedNodes = compactBlock node
             
-            let body = (getBody nodes ";" indent) |> List.rev |> String.concat ""
+            let body = (getBody compactedNodes ";" indent) |> List.rev |> String.concat ""
             body::acc
         | AssignmentBlock(nodes, l) -> 
             let result = ((getBody nodes "," indent) |> List.rev |> String.concat "") |> trim
@@ -115,7 +130,7 @@ let getJavascript ast =
             name::"."::n@acc
         | Call(n,args) ->
             let node = match n with
-                        | Function(_,_,_) -> ")"::(traverse n [] 0)@("("::[])
+                        | Function(_,_,_) -> ")"::(traverse n [] indent)@("("::[])
                         | _ -> traverse n [] 0
             let arguments = ([for a in args do yield! ","::(traverse a [] 0)] |> List.rev |> String.concat "").Trim([|','|])
             ")"::arguments::"("::node@acc
@@ -147,21 +162,21 @@ let getJavascript ast =
             "]"::arguments::("["::acc)
         | If(t,b,e,it) ->
             let test = traverse t [] 0
-            let trueBranch = traverse b [] indent
-            let elseBranch = if e.IsSome then traverse e.Value [] indent else []
+            let trueBranch = traverseReturnOrBody b indent
+            let elseBranch = if e.IsSome then traverseReturnOrBody e.Value (indent) else []
 
             //ternary op
             if it then
                 "))"::elseBranch@(") : ("::trueBranch)@(") ? ("::test)@("(("::acc)
             else
-                let result = (getIndent + "}"::trueBranch)@("){" + getLine::test)@("if("::acc)
+                let result = (getLine + getDedent + "}"::trueBranch)@("){" + getLine::test)@("if("::acc)
                 if e.IsNone then
                     result
                 else
                     match e.Value with
                     // else if
                     | If(_,_,_,_) -> elseBranch@("else "::getLine + getIndent::result)
-                    | _ -> getIndent + "}"::elseBranch@("else{" + getLine::result)
+                    | _ -> getLine + getDedent + "}"::elseBranch@("else{" + getLine::result)
         | IndexAccess(t,i) ->
             let target = traverse t [] 0
             let index = traverse i [] 0
@@ -189,7 +204,7 @@ let getJavascript ast =
             let op = getOp o
             op::target@acc
         | Regex(r,m) -> "/" + r + "/" + m::acc
-        | Return(v) -> (traverse v [] 0)@("return "::acc)
+        | Return(v) -> (traverse v [] (indent + 1))@("return "::acc)
         | StrictCompare(l,r,o) ->
             let left = traverse l [] 0
             let right = traverse r [] 0

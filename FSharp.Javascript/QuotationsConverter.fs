@@ -62,6 +62,14 @@ let rewriteBodyWithReturn body =
             Return(Call(Function(Block(Return(h)::t), [], None), []))
         | _ -> Return(body)
 
+//let rewriteBodyWithReturn body =
+//        let result = rewriteBody body
+//        match result with
+//        | Block(h::t) -> 
+//            //this extra return is here to fix variable scoping in javascript.
+//            Block([Return(Call(Function(Block(Return(h)::t), [], None), []))])
+//        | _ -> Block([Return(body)])
+
 let rewriteBlockToSingleStatement node =
     match node with
     | Block(l) -> 
