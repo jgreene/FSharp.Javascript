@@ -43,14 +43,14 @@ let getBaseType (startingType:System.Type) =
 
                 innerGet startingType
 
-let getEqualityFunction (parameters:string list) =
+let getEqualityFunction (parameters:string list) (func:string -> string) =
 
     let initialStatement = Assign(Identifier("result", true), Ast.Boolean(true))
     let getBlock (p:string) = Assign(Identifier("result", false), 
                                         BinaryOp(Identifier("result", false), 
                                             Call(Call(Identifier("Microsoft.FSharp.Core.Operators.op_Equality", false),
-                                                [MemberAccess("get_" + camelCase(p) + "()", Identifier("this", false))]),
-                                                    [MemberAccess("get_" + camelCase(p) + "()", Identifier("compareTo", false))]), 
+                                                [MemberAccess("get_" + func p + "()", Identifier("this", false))]),
+                                                    [MemberAccess("get_" + func p + "()", Identifier("compareTo", false))]), 
                                                         System.Linq.Expressions.ExpressionType.AndAlso))
 
 
@@ -73,7 +73,7 @@ let createPropertyGet (property:PropertyInfo, t:System.Type) =
                 let def = (Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(property.GetGetMethod()))
                 let ast = if def.IsSome then Some((QuotationsConverter.convertToAst def.Value).Head) else None
 
-                Assign(MemberAccess("get_" + camelCase property.Name, 
+                Assign(MemberAccess("get_" + property.Name, 
                         MemberAccess("prototype", 
                             getMemberAccess (t.Name, t.DeclaringType, t.Namespace))), 
                                 if ast.IsSome then
@@ -160,11 +160,11 @@ let getAstFromType (mo:System.Type) =
                 name.Replace("New", "").Replace("get_", "")
 
             let createPropertyGet (property:ParameterInfo, r:MethodInfo) =
-                Assign(MemberAccess("get_" + camelCase(property.Name),
+                Assign(MemberAccess("get_" + camelCase property.Name,
                         MemberAccess("prototype", 
                             MemberAccess(cleanName r.Name, 
                                 getMemberAccess(t.Name, t.DeclaringType, t.Namespace)))),
-                                    Function(Return(Identifier("this." + camelCase(property.Name), false)), [], None))
+                                    Function(Return(Identifier("this." + camelCase property.Name, false)), [], None))
 
             
 
@@ -179,7 +179,7 @@ let getAstFromType (mo:System.Type) =
                                                                                  //MemberAccess("prototype", getMemberAccess(t.Name, t.DeclaringType, t.Namespace))) in
 
                                                         let equals = Assign(MemberAccess("Equality", MemberAccess("prototype", MemberAccess(cleanName r.Name, getMemberAccess(t.Name, t.DeclaringType, t.Namespace)))),
-                                                                            getEqualityFunction (parameters |> Array.map (fun p -> p.Name) |> Array.toList) ) in
+                                                                            getEqualityFunction (parameters |> Array.map (fun p -> p.Name) |> Array.toList) camelCase ) in
                                                         
                                                         let props = parameters |> Array.map (fun prop -> createPropertyGet (prop,r)) |> Array.toList in
                                                         
@@ -242,8 +242,8 @@ let getAstFromType (mo:System.Type) =
             let equality =
                 if FSharpType.IsRecord t then
                     let propertyNames = (properties |> List.map (fun x -> x.Name))
-                    let equalityFunction = getEqualityFunction propertyNames
-                    let result = Assign(MemberAccess("Equality", MemberAccess("prototype", getMemberAccess(t.Name, t.DeclaringType, t.Namespace))), equalityFunction)
+                    let equalityFunction = getEqualityFunction propertyNames (fun x -> x)
+                    let result = Assign(MemberAccess("Equality", MemberAccess("prototype", getMemberAccess(t.Name, t.DeclaringType, t.Namespace))), equalityFunction )
                     [result]
                 else
                     []

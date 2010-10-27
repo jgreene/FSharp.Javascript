@@ -161,11 +161,6 @@ let convertToAst quote =
             let args = (getArgs args)
 
             match m.Name with
-//            | n when isBinaryOp n ->
-//                let left = traverse args.[0]
-//                let right = traverse args.[1]
-//                let op = getOperator m.Name
-//                BinaryOp(left, right, op.Value)
             | n when n = "GetArray" -> 
                 let left = traverse args.[0]
                 let right = traverse args.[1]
