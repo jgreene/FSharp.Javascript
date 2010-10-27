@@ -162,7 +162,7 @@ let getJavascript ast =
             let arguments = ([for a in args do yield! ","::(traverse a [] indent)] |> List.rev |> String.concat "").Trim([|','|])
             "]"::arguments::("["::acc)
         | If(t,b,e,it) ->
-            let test = traverse t [] 0
+            let test = traverse t [] indent
             let trueBranch = traverseReturnOrBody b indent
             let elseBranch = if e.IsSome then traverseReturnOrBody e.Value (indent) else []
 
