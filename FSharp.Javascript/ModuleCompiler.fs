@@ -49,8 +49,8 @@ let getEqualityFunction (parameters:string list) =
     let getBlock (p:string) = Assign(Identifier("result", false), 
                                         BinaryOp(Identifier("result", false), 
                                             Call(Call(Identifier("Microsoft.FSharp.Core.Operators.op_Equality", false),
-                                                [MemberAccess("get_" + p + "()", Identifier("this", false))]),
-                                                    [MemberAccess("get_" + p + "()", Identifier("compareTo", false))]), 
+                                                [MemberAccess("get_" + camelCase(p) + "()", Identifier("this", false))]),
+                                                    [MemberAccess("get_" + camelCase(p) + "()", Identifier("compareTo", false))]), 
                                                         System.Linq.Expressions.ExpressionType.AndAlso))
 
 
@@ -73,7 +73,7 @@ let createPropertyGet (property:PropertyInfo, t:System.Type) =
                 let def = (Microsoft.FSharp.Quotations.Expr.TryGetReflectedDefinition(property.GetGetMethod()))
                 let ast = if def.IsSome then Some((QuotationsConverter.convertToAst def.Value).Head) else None
 
-                Assign(MemberAccess("get_" + property.Name, 
+                Assign(MemberAccess("get_" + camelCase property.Name, 
                         MemberAccess("prototype", 
                             getMemberAccess (t.Name, t.DeclaringType, t.Namespace))), 
                                 if ast.IsSome then
