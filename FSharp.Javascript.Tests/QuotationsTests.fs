@@ -638,6 +638,13 @@ type QuotationsTests() =
         test <@ let r = { url = ""; arguments = [|("1", "2"); ("3", "$")|]; }
                 emit r.url
             @>
+
+    [<Test>]
+    member this.``Multiple parameter lambda declares arguments in propert order``() =
+        test <@ let f a b = a + b
+                let x = f 1
+                let result = x 2
+                emit result @>
                     
 
 
