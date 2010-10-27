@@ -49,8 +49,8 @@ let getEqualityFunction (parameters:string list) =
     let getBlock (p:string) = Assign(Identifier("result", false), 
                                         BinaryOp(Identifier("result", false), 
                                             Call(Call(Identifier("Microsoft.FSharp.Core.Operators.op_Equality", false),
-                                                [MemberAccess("get_" + camelCase(p) + "()", Identifier("this", false))]),
-                                                    [MemberAccess("get_" + camelCase(p) + "()", Identifier("compareTo", false))]), 
+                                                [MemberAccess("get_" + p + "()", Identifier("this", false))]),
+                                                    [MemberAccess("get_" + p + "()", Identifier("compareTo", false))]), 
                                                         System.Linq.Expressions.ExpressionType.AndAlso))
 
 
