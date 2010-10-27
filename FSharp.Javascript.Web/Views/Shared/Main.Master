@@ -9,9 +9,10 @@
     <link rel="stylesheet" type="text/css" href="<%= this.ResolveUrl("~/Content/css/site.css") %>" />
 
     <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/jquery-1.4.1.js") %>"></script>
-    <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/fsharp.js") %>"></script>
-    <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/dom.js") %>"></script>
-    <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/fsharp-jquery.js") %>"></script>
+    <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/fscript/FSharp.Javascript.js") %>"></script>
+    <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/fscript/FSharp.Javascript.Dom.js") %>"></script>
+    <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/fscript/FSharp.Javascript.Jquery.js") %>"></script>
+    <script type="text/javascript" src="<%= this.ResolveUrl("~/Scripts/fscript/FSharp.Javascript.Library.js") %>"></script>
 </head>
 <body>
     

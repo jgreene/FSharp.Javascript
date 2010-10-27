@@ -10,5 +10,5 @@ FSharp.Javascript.Dom = {
         return window;
     },
 
-    alert: window.alert
+    alert : window.alert
 }

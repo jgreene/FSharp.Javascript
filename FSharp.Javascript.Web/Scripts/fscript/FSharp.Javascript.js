@@ -17,6 +17,89 @@ registerNamespace('Microsoft.FSharp.Core')
 registerNamespace('Microsoft.FSharp.Collections')
 
 Microsoft.FSharp.Core.Operators = {
+    op_Addition: function (x) {
+        return function (y) {
+            if (x.op_Addition) {
+                return x.op_Addition(y)
+            }
+            return y + x;
+        }
+    },
+
+    op_Subtraction: function (x) {
+        return function (y) {
+            if (x.op_Subtraction) {
+                return x.op_Subtraction(y)
+            }
+            return y - x;
+        }
+    },
+
+    op_Multiply : function(x){
+        return function(y){
+            if(x.op_Multiply){
+                return x.op_Multiply(y);
+            }
+
+            return y * x;
+        }
+    },
+
+    op_Division: function (x) {
+        return function (y) {
+            if (x.op_Division) {
+                return x.op_Division(y);
+            }
+
+            return y / x;
+        }
+    },
+
+    op_LessThanOrEqual: function (x) {
+        return function (y) {
+            if (x.op_LessThanOrEqual) {
+                return x.op_LessThanOrEqual(y)
+            }
+
+            return y <= x;
+        }
+    },
+
+    op_LessThan: function (x) {
+        return function (y) {
+            if (x.op_LessThan) {
+                return x.op_LessThan(y)
+            }
+
+            return y < x;
+        }
+    },
+
+    op_GreaterThan: function (x) {
+        return function (y) {
+            if (x.op_GreaterThan) {
+                return x.op_GreaterThan(y)
+            }
+
+            return y > x;
+        }
+    },
+
+    op_GreaterThanOrEqual: function (x) {
+        return function (y) {
+            if (x.op_GreaterThanOrEqual) {
+                return x.op_GreaterThanOrEqual(y)
+            }
+            return y >= x;
+        }
+    },
+
+    op_Inequality: function (x) {
+        return function (y) {
+            return Microsoft.FSharp.Core.Operators.op_Equality(y)(x) == false;
+        }
+    },
+
     op_Equality: function (one) {
         return function (two) {
             if (one == null && two == null)
@@ -102,6 +185,9 @@ Microsoft.FSharp.Core.Operators = {
 
     Reference: function (x) {
         this.Value = x;
+        this.get_Value = function () {
+            return this.Value;
+        }
     },
 
     Ref: function (x) {
@@ -266,6 +352,22 @@ Microsoft.FSharp.Collections.SeqModule = {
         }
 
         return list;
+    },
+
+    Exists: function (seq) {
+        return function (func) {
+            var result = false;
+
+            while (seq.read()) {
+                var item = seq.get()
+
+                var temp = func(item)
+                if (temp)
+                    result = true;
+            }
+
+            return result;
+        }
     }
 
 }
@@ -342,6 +444,10 @@ Array.prototype.get = function () {
     return this[this.position]
 }
 
+Array.prototype.get_Length = function () {
+    return this.Length;
+}
+
 
 registerNamespace('Microsoft.FSharp.Collections');
 
@@ -358,11 +464,47 @@ Microsoft.FSharp.Collections.ArrayModule = {
                 return acc
             }
         }
+    },
+
+    Map: function (source) {
+        return function (func) {
+            var newArr = []
+            while (source.read()) {
+                var item = source.get()
+                var result = func(item)
+                newArr.push(result)
+            }
+
+            return newArr
+        }
+    },
+
+    Iterate: function (source) {
+        return function (func) {
+            while (source.read()) {
+                var item = source.get()
+                func(item)
+            }
+        }
+    },
+
+    Filter: function (source) {
+        return function (func) {
+            var newArr = []
+            while (source.read()) {
+                var item = source.get()
+                if (func(item)) {
+                    newArr.push(item)
+                }
+            }
+
+            return newArr;
+        }
     }
 }
 
 Microsoft.FSharp.Collections.FSharpList = {
-    Empty: function () {
+    Empty : function () {
         this.Length = 0
         this.Head = null
         this.IsEmpty = true
@@ -391,18 +533,18 @@ Microsoft.FSharp.Collections.FSharpList = {
             return false
         };
 
-        this.get = function () {
+        this.get = function(){
             return null;
         };
     },
 
-    Cons: function (list, arg) {
+    Cons : function (list, arg) {
         this.ReadState = null;
         this.Length = list.Length + 1;
         this.Head = arg;
         this.IsEmpty = false;
         this.Tail = list;
-
+        
         this.get_Item = function (x) {
             if (x == 0)
                 return this.Head;
@@ -466,15 +608,16 @@ Microsoft.FSharp.Collections.ListModule = {
 
     Exists: function (list) {
         return function (func) {
+            var result = false;
             while (list.read()) {
                 var item = list.get()
 
-                var result = func(item)
-                if (result == true)
-                    return true;
+                var temp = func(item)
+                if (temp == true)
+                    result = true;
             }
 
-            return false;
+            return result;
         }
     },
 
@@ -497,12 +640,12 @@ Microsoft.FSharp.Collections.ListModule = {
 
 registerNamespace('Microsoft.FSharp.Core.LanguagePrimitives')
 Microsoft.FSharp.Core.LanguagePrimitives.IntrinsicFunctions = {
-    UnboxGeneric: function (x) { return x; }
+    UnboxGeneric : function (x) { return x; }
 }
 
 
 Microsoft.FSharp.Collections.FSharpMap = {
-    Empty: function () {
+    Empty : function () {
         this.Count = 0
         this.Head = null
         this.IsEmpty = true
@@ -556,7 +699,7 @@ Microsoft.FSharp.Collections.FSharpMap = {
 
     },
 
-    Cons: function (list, arg) {
+    Cons : function (list, arg) {
         this.ReadState = null;
         this.Count = list.Count + 1;
         this.Head = arg;
@@ -631,10 +774,10 @@ Microsoft.FSharp.Collections.FSharpMap = {
 }
 
 Microsoft.FSharp.Collections.MapModule = {
-    Empty: function () {
+    Empty : function () {
         return new Microsoft.FSharp.Collections.FSharpMap.Empty();
     },
-    Add: function (source) {
+    Add : function (source) {
         return function (value) {
             return function (key) {
                 var item = { key: key, value: value }
@@ -643,7 +786,7 @@ Microsoft.FSharp.Collections.MapModule = {
         }
     },
 
-    Find: function (source) {
+    Find : function (source) {
         return function (key) {
             var result = null;
             while (source.read()) {
@@ -657,7 +800,7 @@ Microsoft.FSharp.Collections.MapModule = {
         }
     },
 
-    TryFind: function (source) {
+    TryFind : function (source) {
         return function (key) {
             var result = new Microsoft.FSharp.Core.FSharpOption.None();
             while (source.read()) {
@@ -671,7 +814,7 @@ Microsoft.FSharp.Collections.MapModule = {
         }
     },
 
-    ContainsKey: function (source) {
+    ContainsKey : function (source) {
         return function (key) {
             var result = false;
             while (source.read()) {
@@ -768,6 +911,42 @@ System.DateTime = function () {
 
         return result;
     };
+
+    var getJavascriptDate = function (x) {
+        var date = new Date(x.Year, (x.Month - 1), x.Day, x.Hour, x.Minute, x.Second)
+
+        return date;
+    }
+
+    this.op_GreaterThan = function (x) {
+        var date1 = getJavascriptDate(this)
+        var date2 = getJavascriptDate(x)
+
+        return date2 > date1;
+    }
+
+    this.op_LessThan = function (x) {
+        var date1 = getJavascriptDate(this)
+        var date2 = getJavascriptDate(x)
+
+        return date2 < date1;
+    }
+
+    this.op_GreaterThanOrEqual = function (x) {
+        var date1 = getJavascriptDate(this)
+        var date2 = getJavascriptDate(x)
+
+        return date2 >= date1;
+    }
+
+    this.op_LessThanOrEqual = function (x) {
+        var date1 = getJavascriptDate(this)
+        var date2 = getJavascriptDate(x)
+
+        return date2 <= date1;
+    }
+
+
 }
 
 System.DateTime.get_Now = function () {
@@ -784,3 +963,6 @@ System.DateTime.Parse = function (x) {
 
 System.DateTime.MinValue = new System.DateTime();
 
+String.prototype.Contains = function (x) {
+    return this.indexOf(x) != -1
+}

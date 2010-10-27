@@ -69,7 +69,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
-    <Content Include="Scripts\fsharp-jquery.js" />
+    <Content Include="Scripts\fscript\FSharp.Javascript.Dom.js" />
+    <Content Include="Scripts\fscript\FSharp.Javascript.Jquery.js" />
+    <Content Include="Scripts\fscript\FSharp.Javascript.js" />
+    <Content Include="Scripts\fscript\FSharp.Javascript.Library.js" />
     <Content Include="TempAssemblies\placeholder.txt" />
     <Content Include="Content\css\site.css" />
     <Compile Include="Global.asax.cs">
@@ -78,8 +81,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\dom.js" />
-    <Content Include="Scripts\fsharp.js" />
     <Content Include="Scripts\jquery-1.4.1.js" />
     <Content Include="Views\Home\Index.aspx" />
     <Content Include="Web.config">
