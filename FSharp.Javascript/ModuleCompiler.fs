@@ -49,8 +49,8 @@ let getEqualityFunction (parameters:string list) =
     let getBlock (p:string) = Assign(Identifier("result", false), 
                                         BinaryOp(Identifier("result", false), 
                                             Call(Call(Identifier("Microsoft.FSharp.Core.Operators.op_Equality", false),
-                                                [MemberAccess("get_" + camelCase(p), Identifier("this", false))]),
-                                                    [MemberAccess("get_" + camelCase(p), Identifier("compareTo", false))]), 
+                                                [MemberAccess("get_" + camelCase(p) + "()", Identifier("this", false))]),
+                                                    [MemberAccess("get_" + camelCase(p) + "()", Identifier("compareTo", false))]), 
                                                         System.Linq.Expressions.ExpressionType.AndAlso))
 
 
@@ -94,7 +94,7 @@ let createPropertySet (property:PropertyInfo, t:System.Type) =
                     if ast.IsSome then
                         ast.Value
                     else
-                        Function(Assign(Identifier("this." + property.Name, false), Identifier("x", false)), [Identifier("x", false)], None)
+                        Function(Block([Assign(Identifier("this." + property.Name, false), Identifier("x", false))]), [Identifier("x", false)], None)
         )
 
 let getInheritance (t:Type) =
@@ -154,7 +154,7 @@ let getAstFromType (mo:System.Type) =
         elif FSharpType.IsUnion t then
             let cases = FSharpType.GetUnionCases t
             let rdr = [for c in cases do yield FSharpValue.PreComputeUnionConstructorInfo c]
-            let rd = [for r in rdr do yield (r,r.GetParameters())]
+            let rd = [for r in rdr do yield (r,r.GetParameters())] |> List.rev
 
             let cleanName (name:string) =
                 name.Replace("New", "").Replace("get_", "")
@@ -252,7 +252,7 @@ let getAstFromType (mo:System.Type) =
 
 
             let getProps = properties |> List.map (fun prop -> createPropertyGet (prop,t))
-            let setProps = properties |> List.map (fun prop -> createPropertySet (prop,t))
+            let setProps = if FSharpType.IsRecord t then [] else properties |> List.map (fun prop -> createPropertySet (prop,t))
             let props = getProps@setProps
 
             (func::acc@inherits@equality@q@props)@childResults
