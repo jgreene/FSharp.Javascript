@@ -897,28 +897,28 @@ System.DateTime = function () {
         var date1 = getJavascriptDate(this)
         var date2 = getJavascriptDate(x)
 
-        return date2 > date1;
+        return date1 > date2;
     }
 
     this.op_LessThan = function (x) {
         var date1 = getJavascriptDate(this)
         var date2 = getJavascriptDate(x)
 
-        return date2 < date1;
+        return date1 < date2;
     }
 
     this.op_GreaterThanOrEqual = function (x) {
         var date1 = getJavascriptDate(this)
         var date2 = getJavascriptDate(x)
 
-        return date2 >= date1;
+        return date1 >= date2;
     }
 
     this.op_LessThanOrEqual = function (x) {
         var date1 = getJavascriptDate(this)
         var date2 = getJavascriptDate(x)
 
-        return date2 <= date1;
+        return date1 <= date2;
     }
 
 
