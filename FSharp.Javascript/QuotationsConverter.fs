@@ -211,22 +211,29 @@ let convertToAst quote =
                             
                             | _ -> acc
 
-                        loop expr 0 []
+                        (loop expr 0 []) |> List.rev
                         
                     | None -> [for a in args' -> traverse a] 
 
                 let arguments = getArguments (definition, args)
 
                 let getCallNode node =
+
                     if arguments.Length = 0 then
                         Call(node, arguments)
-                    else
+                    elif Microsoft.FSharp.Reflection.FSharpType.IsModule m.DeclaringType then
                         let temp = ref node
 
-                        for a in arguments |> List.rev do
+                        for a in arguments do
                             temp := Call(temp.Value, [a])
 
                         temp.Value
+                    else
+                        Call(node, arguments |> List.rev)
+
+                
+                
+                
 
                 match exprs with
                 | Some expr ->
@@ -234,7 +241,6 @@ let convertToAst quote =
                     getCallNode (MemberAccess(realName, left))
                 | None -> 
                     let node = getMemberAccess (m.Name, m.DeclaringType, m.DeclaringType.Namespace)
-                    
                     getCallNode node
 
         | Patterns.IfThenElse(s,b,e) ->

@@ -11,15 +11,15 @@ type QuotationsTests() =
     
     [<Test>]
     member this.``Addition``() =
-        test <@ emit(1 + 1) @>
+        test <@ emit(1 + 2) @>
 
     [<Test>]
     member this.``Subtraction``() =
-        test <@ emit(1 - 1) @>
+        test <@ emit(2 - 1) @>
 
     [<Test>]
     member this.``Multiplication``() =
-        test <@ emit(2 * 2) @>
+        test <@ emit(2 * 3) @>
 
     [<Test>]
     member this.``Function declaration with call``() =
@@ -574,8 +574,9 @@ type QuotationsTests() =
 
     [<Test>]
     member this.``Can iterate map twice``() =
-        test <@ let errors = Map.empty |> (Map.add "first" 1) |> (Map.add "second" 2)
-                let result = (errors |> Map.containsKey "second") && (errors |> Map.containsKey "first")
+        test <@ let errors = Map.empty |> (Map.add "first" 1)
+                let errors2 = Map.add "second" 2 errors
+                let result = (errors2 |> Map.containsKey "second") && (errors2 |> Map.containsKey "first")
                 emit result
                  @>
 
@@ -647,4 +648,8 @@ type QuotationsTests() =
                 emit result @>
                     
 
-
+    [<Test>]
+    member this.``String.Join works``() =
+        test <@ let a = [1;2;3;4;5]
+                let result = System.String.Join(",", a)
+                emit result @>
