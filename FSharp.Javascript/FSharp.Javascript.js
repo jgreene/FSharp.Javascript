@@ -16,6 +16,8 @@ registerNamespace('Microsoft.FSharp.Core')
 
 registerNamespace('Microsoft.FSharp.Collections')
 
+
+
 Microsoft.FSharp.Core.Operators = {
     op_Addition: function (x) {
         return function (y) {
@@ -941,6 +943,10 @@ System.DateTime.MinValue = new System.DateTime();
 String.prototype.Contains = function (x) {
     return this.indexOf(x) != -1
 }
+String.prototype.Replace = function(search, replace) {
+    return this.replace(search, replace)
+}
+
 
 System.String = {
     Join: function (seperator, source) {
