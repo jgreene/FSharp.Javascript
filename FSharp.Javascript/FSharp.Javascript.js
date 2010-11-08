@@ -443,7 +443,7 @@ Array.prototype.get = function () {
 }
 
 Array.prototype.get_Length = function () {
-    return this.Length;
+    return this.length;
 }
 
 
@@ -661,7 +661,7 @@ Microsoft.FSharp.Collections.FSharpMap = {
             return false;
         };
 
-        this.Add = function (value, key) {
+        this.Add = function (key, value) {
             return Microsoft.FSharp.Collections.MapModule.Add(key)(value)(this);
         };
 
