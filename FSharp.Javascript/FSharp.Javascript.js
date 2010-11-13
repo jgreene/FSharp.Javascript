@@ -366,8 +366,7 @@ Microsoft.FSharp.Collections.SeqModule = {
                 return acc
             }
         }
-    },
-
+    }
 }
 
 
@@ -946,6 +945,9 @@ String.prototype.Contains = function (x) {
 String.prototype.Replace = function(search, replace) {
     return this.replace(search, replace)
 }
+String.prototype.get_Length = function(){
+    return this.length
+}
 
 
 System.String = {
@@ -957,5 +959,17 @@ System.String = {
         })("")(source);
 
         return result.slice(0, result.length - (seperator.length))
+    }
+}
+
+registerNamespace("System.Text")
+
+System.Text.RegularExpressions = {
+    Regex : function(regex){
+        var innerRegex = new RegExp(regex)
+
+        this.IsMatch = function(toMatch){
+            return innerRegex.test(toMatch)
+        }
     }
 }

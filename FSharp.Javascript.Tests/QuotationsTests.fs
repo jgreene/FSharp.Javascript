@@ -653,3 +653,21 @@ type QuotationsTests() =
         test <@ let a = [1;2;3;4;5]
                 let result = System.String.Join(",", a)
                 emit result @>
+
+    [<Test>]
+    member this.``Reassignment in inner scope does not break`` () =
+        test <@ let a = 1
+                let result = if true then
+                                let a = a + 1
+                                a
+                                else
+                                a
+                emit result
+
+                @>
+
+    [<Test>]
+    member this.``Reassignment in same scope works`` () =
+        test <@ let a = 1
+                let a = 2
+                emit a @>

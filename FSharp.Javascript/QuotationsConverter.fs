@@ -113,6 +113,10 @@ let getMemberAccess (name:string, t:System.Type, nameSpace:string) =
         Identifier(cleanName name, false)
     else
         MemberAccess(cleanName name, loop t)
+
+let serializeToJson x =
+    let serializer = new System.Web.Script.Serialization.JavaScriptSerializer()
+    serializer.Serialize(x)
         
 
 let convertToAst quote =
@@ -121,7 +125,10 @@ let convertToAst quote =
         | Patterns.Value(x,y) -> match x with
                                     | :? int -> Number(Some(x :?> int), None)
                                     | :? float -> Number(None, Some(x :?> float))
-                                    | :? string -> String(x :?> string, '"')
+                                    | :? string -> 
+                                        let jsonString = serializeToJson x
+                                        let result = jsonString.Remove(jsonString.Length - 1, 1).Remove(0, 1)
+                                        String(result, '"')
                                     | :? bool -> Boolean(x :?> bool)
                                     | null -> Null
                                     | :? System.Enum -> New(Identifier(y.DeclaringType.Name + "." + y.Name + "." + x.ToString(), false), [], None)
