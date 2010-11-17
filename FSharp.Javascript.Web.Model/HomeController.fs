@@ -41,3 +41,6 @@ let main() = jquery(document).ready(fun x -> fact() )"
             [for e in errors do yield (this.ModelState.AddModelError("FSharp", e.ErrorText) |> ignore)] |> ignore
 
             base.View("Index", view)
+
+    member this.Canvas() =
+        base.View()

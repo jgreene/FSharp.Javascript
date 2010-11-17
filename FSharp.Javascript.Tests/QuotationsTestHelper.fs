@@ -58,6 +58,17 @@ let run (source:string) =
 //    let emitter = new StringBuilder()
 //    let func x = emitter.Append(x.ToString())
 //    let testDel = new mydel(func)
+//    let engine = new Jurassic.ScriptEngine()
+//    engine.SetGlobalFunction("test", testDel)
+//    engine.Execute(source)
+//    emitter.ToString()
+
+//type mydel = delegate of obj -> StringBuilder
+//
+//let run (source:string) =
+//    let emitter = new StringBuilder()
+//    let func x = emitter.Append(x.ToString())
+//    let testDel = new mydel(func)
 //    let engine = new JintEngine()
 //    engine.SetFunction("emit", testDel).Run(source) |> ignore
 //    emitter.ToString()

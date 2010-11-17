@@ -320,6 +320,8 @@ let convertToAst quote =
             let argNames = i.GetParameters()
             let ar = [for a in args do yield traverse a] |> List.rev
             New(getMemberAccess (i.DeclaringType.Name, i.DeclaringType.DeclaringType, i.DeclaringType.Namespace), ar, None)
+        | Patterns.NewUnionCase(i, l) -> 
+            New(getMemberAccess (i.Name, i.DeclaringType, i.DeclaringType.Namespace), [for a in l do yield traverse a] |> List.rev, None)
         | Patterns.NewTuple(tup) ->
             let args = [for t in tup do yield traverse t] |> List.rev
             New(Identifier("Tuple", false), args, None)
@@ -351,10 +353,7 @@ let convertToAst quote =
             let withBody = traverse e
             let catch = Catch(Identifier(b.Name, false), rewriteBodyWithReturn withBody)
             Call(Function(Try(rewriteBodyWithReturn tryBody, Some(catch), None), [], None), [])
-        | Patterns.NewUnionCase(i, h::[]) -> 
-            New(getMemberAccess (i.Name, i.DeclaringType, i.DeclaringType.Namespace), [traverse h], None)
-        | Patterns.NewUnionCase(i, l) -> 
-            New(getMemberAccess (i.Name, i.DeclaringType, i.DeclaringType.Namespace), [for a in l do yield traverse a], None)
+        
         | Patterns.UnionCaseTest(expr, info) ->
             let left = traverse expr
             InstanceOf(left, getMemberAccess (info.Name, info.DeclaringType, info.DeclaringType.Namespace))

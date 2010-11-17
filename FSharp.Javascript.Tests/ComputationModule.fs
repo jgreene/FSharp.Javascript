@@ -56,3 +56,7 @@ let addInt t = state {
                     let! a = state { return t::[] }
                     return a
                }
+
+type node =
+    | Directory of string * node list
+    | File of string
