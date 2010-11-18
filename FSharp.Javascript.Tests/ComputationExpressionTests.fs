@@ -302,4 +302,96 @@ type ComputationExpressionTests() =
         test <@ let seq1 = seq { 1..5 }
                 let result = Seq.min seq1
                 emit result @>
+
+    [<Test>]
+    member this.``Sequence pairwise`` () =
+        test <@ let seq1 = Seq.pairwise (seq { for i in 1 .. 10 -> i * i })
+                let result = seq1 |> Seq.fold(fun acc (x,y) -> acc + "(" + x.ToString() + ", " + y.ToString() + ") ") ""
+                emit result @>
+
+    [<Test>]
+    member this.``Sequence pick`` () =
+        test <@ let seq1 = seq { 1..10 }
+                let result = seq1 |> Seq.pick (fun x -> if x = 4 then Some x else None)
+                emit result @>
+
+    [<Test>]
+    member this.``Sequence tryPick`` () =
+        test <@ let seq1 = seq { 1..10 }
+                let result = seq1 |> Seq.tryPick (fun x -> if x = 11 then Some x else None)
+                emit result.IsSome @>
+
+    [<Test>]
+    member this.``Sequence reduce`` () =
+        test <@ let seq = seq { 1..10 }
+                let result = seq |> Seq.reduce(fun acc x -> acc + x)
+                emit result @>
+
+    [<Test>]
+    member this.``Sequence scan`` () =
+        test <@ let initialBalance = 1122.73
+                let transactions = [ -100.00; +450.34; -62.34; -127.00; -13.50; -12.92 ]
+                let balances = Seq.scan (fun balance transactionAmount -> balance + transactionAmount) initialBalance transactions
+                let result = balances |> Seq.fold (fun acc next -> acc + next.ToString() + ",") ""
+                emit result @>
+
+    [<Test>]
+    member this.``Sequence skip``() =
+        test <@ let seq1 = seq { 1..40 }
+                let seq2 = seq1 |> Seq.skip 10
+                let result = seq2 |> Seq.fold (fun acc next -> acc + next.ToString() + ",") ""
+                emit result @>
+
+    [<Test>]
+    member this.``Sequence skipWhile``() =
+        test <@ let seq1 = seq { 1..40 }
+                let seq2 = seq1 |> Seq.skipWhile (fun x -> x < 20)
+                let result = seq2 |> Seq.fold (fun acc next -> acc + next.ToString() + ",") ""
+                emit result @>
+
+    [<Test>]
+    member this.``Sequence truncate`` () =
+        test <@ let seq1 = seq { 1..40 }
+                let seq2 = seq1 |> Seq.truncate 20
+                let result = seq2 |> Seq.fold (fun acc next -> acc + next.ToString() + ",") ""
+                emit result @>
+
+    [<Test>]
+    member this.``Sequence tryFindIndex`` () =
+        test <@ let seq1 = seq { 1..40 }
+                let result = seq1 |> Seq.tryFindIndex(fun x -> x = 10)
+                emit result.Value @>
+
+    [<Test>]
+    member this.``Sequence unfold`` () =
+        test <@ let seq1 = Seq.unfold (fun state -> if (state > 20) then None else Some(state, state + 1)) 0
+                let result = seq1 |> Seq.fold (fun acc next -> acc + next.ToString() + ",") ""
+                emit result @>
+
+    [<Test>]
+    member this.``Sequence windowed`` () =
+        test <@ let seqNumbers = [ 1.0; 1.5; 2.0; 1.5; 1.0; 1.5 ] :> seq<float>
+                let seqWindows = Seq.windowed 3 seqNumbers
+
+                let result = seqWindows |> Seq.fold(fun acc next -> acc + "[" + (next |> Seq.fold(fun innerAcc n -> innerAcc + n.ToString() + ",") "") + "] ") ""
+                emit result @>
+
+    [<Test>]
+    member this.``Sequence zip`` () =
+        test <@ let seq1 = seq { 1..10 }
+                let seq2 = seq { 10.. -1 .. 1 }
+                let zip = Seq.zip seq1 seq2
+                let result = zip |> Seq.fold (fun acc (l,r) -> acc + "(" + l.ToString() + ", " + r.ToString() + ") ") ""
+                emit result @>
+
+    [<Test>]
+    member this.``Sequence zip3`` () =
+        test <@ let seq1 = seq { 1..10 }
+                let seq2 = seq { 10.. -1 .. 1 }
+                let seq3 = seq { 100 .. -1 .. 1 }
+                let zip = Seq.zip3 seq1 seq2 seq3
+                let result = zip |> Seq.fold (fun acc (l,m,r) -> acc + "(" + l.ToString() + ", " + m.ToString() + ", " + r.ToString() + ") ") ""
+                emit result @>
+
+        
                 
