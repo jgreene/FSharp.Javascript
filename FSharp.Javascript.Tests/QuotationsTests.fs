@@ -657,10 +657,27 @@ type QuotationsTests() =
     [<Test>]
     member this.``Reassignment in inner scope does not break`` () =
         test <@ let a = 1
+                let myMethod x y = x + y
                 let result = if true then
                                 let a = a + 1
-                                a
+                                if a >= 1 then
+                                    let a = a + 2
+                                    if true then
+                                        let a = a + 3
+                                        if true then
+                                            let a = a + 4
+                                            if true then
+                                                let a = myMethod a 5
+                                                a
+                                            else
+                                                a
+                                        else
+                                        a
+                                    else
+                                    a
                                 else
+                                    a
+                              else
                                 a
                 emit result
 

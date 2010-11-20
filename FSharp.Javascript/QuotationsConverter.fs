@@ -120,7 +120,7 @@ let serializeToJson x =
         
 
 let convertToAst quote =
-    let rec traverse node =
+    let rec traverse node (map:Map<string, string list>) =
         match node with
         | Patterns.Value(x,y) -> match x with
                                     | :? int -> Number(Some(x :?> int), None)
@@ -169,8 +169,8 @@ let convertToAst quote =
 
             match m.Name with
             | n when n = "GetArray" -> 
-                let left = traverse args.[0]
-                let right = traverse args.[1]
+                let left = traverse args.[0] map
+                let right = traverse args.[1] map
                 IndexAccess(left, right)
 
             | _ -> 
@@ -197,7 +197,7 @@ let convertToAst quote =
 
                                 let lastTuplePosition = (getTuplePositions x position)
 
-                                let arguments = [for pos in { position .. (lastTuplePosition) - 1 } -> traverse (args'.[pos])] |> List.rev
+                                let arguments = [for pos in { position .. (lastTuplePosition) - 1 } -> traverse (args'.[pos]) map] |> List.rev
                                 let tuple = createTuple arguments
                                 loop x lastTuplePosition (tuple::acc)
                             | Patterns.Lambda(v,x) when v.Type.Name = "Unit" || position > (args'.Length - 1) ->
@@ -208,7 +208,7 @@ let convertToAst quote =
                                 let args = args'
                                 let arg = args.[position]
                                 if arg.Type = v.Type then
-                                    let result = traverse arg
+                                    let result = traverse arg map
                                     loop x (position + 1) (result::acc)
                                 else
                                     loop x position acc
@@ -220,7 +220,7 @@ let convertToAst quote =
 
                         (loop expr 0 []) |> List.rev
                         
-                    | None -> [for a in args' -> traverse a] 
+                    | None -> [for a in args' -> traverse a map] 
 
                 let arguments = getArguments (definition, args)
 
@@ -244,7 +244,7 @@ let convertToAst quote =
 
                 match exprs with
                 | Some expr ->
-                    let left = traverse exprs.Value
+                    let left = traverse exprs.Value map
                     getCallNode (MemberAccess(realName, left))
                 | None -> 
                     let node = getMemberAccess (m.Name, m.DeclaringType, m.DeclaringType.Namespace)
@@ -254,116 +254,144 @@ let convertToAst quote =
 
             
             
-            let els = rewriteBodyWithReturn (traverse e)
+            let els = rewriteBodyWithReturn (traverse e map)
 
             match s with
             | Let(x,y,z) -> 
                 let body = match b with
                             | Let(p,o,i) when p.Name = x.Name && y = o ->
-                                rewriteBodyWithReturn(traverse i)
-                            | _ -> rewriteBodyWithReturn (traverse b)
-                let result = traverse y
-                let statement = traverse z
+                                rewriteBodyWithReturn(traverse i map)
+                            | _ -> rewriteBodyWithReturn (traverse b map)
+                let result = traverse y map
+                let statement = traverse z map
                 let after = Call(Function(Block([If(statement,body,Some(els), false)]), [], None), [])
                 Block([after;Assign(Identifier(x.Name, true), result)])
             | _ -> 
-                let body = rewriteBodyWithReturn (traverse b)
-                let statement = traverse s
+                let body = rewriteBodyWithReturn (traverse b map)
+                let statement = traverse s map
                 Call(Function(Block([If(statement,body,Some(els), false)]), [], None), [])
                 
         | Patterns.Let(v, r, a) ->
+            let getNameAndMap (name:string) (map:Map<string,string list>) =
+                
+                let getNextName name =
+                    let rec loop (name:string) num =
+                        if name.EndsWith(num.ToString()) then
+                            loop name (num + 1)
+                        else
+                            name + (num.ToString())
+                    loop name 1
+                    
+                    
+                if map.ContainsKey(name) then
+                    let value = map.[name]
+                    match value with
+                    | h::t -> 
+                        let nextName = getNextName h
+                        let map = map.Remove(name).Add(name,nextName::h::t)
+                        (nextName, map)
+                    | [] -> 
+                        let nextName = getNextName name
+                        let map = map.Remove(name).Add(name,nextName::[])
+                        (nextName, map)
+                else
+                    (name, map.Add(name, []))
+                    
+            let newName,newMap = getNameAndMap v.Name map
+
             match r with
             | Let(x,y,z) -> 
-                let right = traverse y
-                let after = traverse a
-                let right2 = traverse z
+                let secondName, secondMap = getNameAndMap x.Name newMap
+                let right = traverse y map
+                let after = traverse a secondMap
+                let right2 = traverse z map
                 let afterResult = match after with
                                     | Block(r::l::[]) -> r::l::[]
                                     | _ -> [after]
 
-                let le2 = Assign(Identifier(x.Name, true), right)
-                let le = Assign(Identifier(v.Name, true), right2)
+                let le2 = Assign(Identifier(secondName, true), right)
+                let le = Assign(Identifier(newName, true), right2)
                 Block(afterResult@(le::le2::[]))
             | _ -> 
-                let right = traverse r
-                let after = traverse a
+                let right = traverse r map
+                let after = traverse a newMap
                 let afterResult = match after with
                                     | Block(r::l::[]) -> r::l::[]
                                     | _ -> [after]
 
-                let le = Assign(Identifier(v.Name, true), right)
+                let le = Assign(Identifier(newName, true), right)
                 Block(afterResult@[le])
         | Patterns.LetRecursive(lets, e) -> 
-            let functions = [for (v,l) in lets -> Assign(Identifier(cleanName v.Name, true), traverse l)]
-            let after = traverse e
+            let functions = [for (v,l) in lets -> Assign(Identifier(cleanName v.Name, true), traverse l map)]
+            let after = traverse e map
             Block(after::functions)
         | Patterns.Lambda(v,x) ->
             let arg = Identifier(cleanName v.Name, false)
-            let body = rewriteBodyWithReturn (traverse x)
+            let body = rewriteBodyWithReturn (traverse x map)
             Function(body, [arg], None)
         | Patterns.Application(l,r) ->
-            let left = traverse l
-            let right = traverse r
+            let left = traverse l map
+            let right = traverse r map
             Call(left, [right])
         | Patterns.NewArray(t,l) ->
-            NewArray(Null, [for a in l do yield traverse a] |> List.rev)
+            NewArray(Null, [for a in l do yield traverse a map] |> List.rev)
 
         | Patterns.NewRecord(t,args) ->
             let argNames = t.GetProperties() |> Array.toList
 
-            let ar = [for i in [0..(args.Length - 1)] do yield (traverse args.[i])] |> List.rev
+            let ar = [for i in [0..(args.Length - 1)] do yield (traverse args.[i] map)] |> List.rev
             New(getMemberAccess (t.Name, t.DeclaringType, t.Namespace), ar, None)
 
         | Patterns.NewObject(i, args) ->
             let argNames = i.GetParameters()
-            let ar = [for a in args do yield traverse a] |> List.rev
+            let ar = [for a in args do yield traverse a map] |> List.rev
             New(getMemberAccess (i.DeclaringType.Name, i.DeclaringType.DeclaringType, i.DeclaringType.Namespace), ar, None)
         | Patterns.NewUnionCase(i, l) -> 
-            New(getMemberAccess (i.Name, i.DeclaringType, i.DeclaringType.Namespace), [for a in l do yield traverse a] |> List.rev, None)
+            New(getMemberAccess (i.Name, i.DeclaringType, i.DeclaringType.Namespace), [for a in l do yield traverse a map] |> List.rev, None)
         | Patterns.NewTuple(tup) ->
-            let args = [for t in tup do yield traverse t] |> List.rev
+            let args = [for t in tup do yield traverse t map] |> List.rev
             New(Identifier("Tuple", false), args, None)
         | Patterns.TupleGet(n,index) ->
-            let identifier = traverse n
+            let identifier = traverse n map
             MemberAccess("Item" + (index + 1).ToString(), identifier)
         | Patterns.Coerce(v,o) ->
-            traverse v
+            traverse v map
 
         | Patterns.PropertyGet(l, i, []) ->
             if l.IsSome then
-                    let left = traverse l.Value
+                    let left = traverse l.Value map
                     Call(MemberAccess("get_" + i.Name, left), [])
             else
                 Call(getMemberAccess ("get_" + i.Name, i.DeclaringType, i.DeclaringType.Namespace), [])
         | Patterns.PropertyGet(l,i,r) ->
-            let left = if l.IsSome then Some(traverse l.Value) else None
-            let args = [for a in r -> traverse a]
+            let left = if l.IsSome then Some(traverse l.Value map) else None
+            let args = [for a in r -> traverse a map]
             
             Call(MemberAccess("get_" + i.Name, left.Value), args)
         | Patterns.FieldGet(l,i) ->
             if l.IsSome then
-                let left = traverse l.Value
+                let left = traverse l.Value map
                 MemberAccess(i.Name, left)
             else
                 getMemberAccess (i.Name, i.DeclaringType, i.DeclaringType.Namespace)
         | Patterns.TryWith(a,b,c,d,e) -> 
-            let tryBody = traverse a
-            let withBody = traverse e
+            let tryBody = traverse a map
+            let withBody = traverse e map
             let catch = Catch(Identifier(b.Name, false), rewriteBodyWithReturn withBody)
             Call(Function(Try(rewriteBodyWithReturn tryBody, Some(catch), None), [], None), [])
         
         | Patterns.UnionCaseTest(expr, info) ->
-            let left = traverse expr
+            let left = traverse expr map
             InstanceOf(left, getMemberAccess (info.Name, info.DeclaringType, info.DeclaringType.Namespace))
         | Patterns.Sequential(l,r) ->
-            let left = traverse l
-            let right = traverse r
+            let left = traverse l map
+            let right = traverse r map
             Block([right;left])
 
         //potentially only index access
         
         | Patterns.TypeTest(expr, t) ->
-            let left = traverse expr
+            let left = traverse expr map
 
             match t.Name with
             | "Int32" | "Double" -> BinaryOp(TypeOf(left), String("number", '"'), ExpressionType.Equal)
@@ -378,34 +406,46 @@ let convertToAst quote =
             | _ -> Number(Some(0), None)
 
         | Patterns.PropertySet(a,pi, exps,c) ->
-            let a' = traverse a.Value
+            let a' = traverse a.Value map
                 
             let memberAccess = MemberAccess("set_" + pi.Name, a')
 
-            Call(memberAccess, [traverse c])
+            Call(memberAccess, [traverse c map])
         | Patterns.VarSet(a, v) ->
-            Assign(Identifier(a.Name, false), traverse v)
+            Assign(Identifier(a.Name, false), traverse v map)
         | Patterns.WhileLoop(a,b) ->
-            While(traverse a, traverse b, true)
+            While(traverse a map, traverse b map, true)
         | Patterns.FieldSet(a,pi,c) ->
             let a' = traverse a.Value
                 
-            let memberAccess = MemberAccess(pi.Name, a')
+            let memberAccess = MemberAccess(pi.Name, a' map)
 
-            Assign(memberAccess, traverse c)
+            Assign(memberAccess, traverse c map)
         //variable name, start, end, body
         | Patterns.ForIntegerRangeLoop(v, a, b, c) ->
-            let oper = BinaryOp(Identifier(v.Name, false), traverse b, ExpressionType.LessThanOrEqual)
-            ForStepNode(Assign(Identifier(v.Name, true), traverse a), oper, PostfixOperator(Identifier(v.Name, false), ExpressionType.PostIncrementAssign), traverse c)
+            let oper = BinaryOp(Identifier(v.Name, false), traverse b map, ExpressionType.LessThanOrEqual)
+            ForStepNode(Assign(Identifier(v.Name, true), traverse a map), oper, PostfixOperator(Identifier(v.Name, false), ExpressionType.PostIncrementAssign), traverse c map)
            
         | Patterns.Quote(x) ->
-            traverse x     
-        | ShapeVar v -> Identifier(cleanName v.Name, false)
+            traverse x map   
+        | ShapeVar v -> 
+            let getVariableName (name:string) (map:Map<string,string list>) =
+                if map.ContainsKey(name) then
+                    let value = map.[name]
+                    match value with
+                    | h::t -> h
+                    | [] -> name
+                else
+                    name
+
+            let name = getVariableName v.Name map
+
+            Identifier(cleanName name, false)
             
         
             
         | _ -> failwith "quotation conversion failure"
 
-    let result = traverse quote
+    let result = traverse quote Map.empty
     
     [rewriteBody result]
