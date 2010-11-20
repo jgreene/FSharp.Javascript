@@ -688,3 +688,8 @@ type QuotationsTests() =
         test <@ let a = 1
                 let a = 2
                 emit a @>
+
+    [<Test>]
+    member this.``Division on uneven int results in int``() =
+        test <@ let result = 3 / 2
+                emit result @>

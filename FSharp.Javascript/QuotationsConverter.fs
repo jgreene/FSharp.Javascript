@@ -123,7 +123,10 @@ let convertToAst quote =
     let rec traverse node (map:Map<string, string list>) =
         match node with
         | Patterns.Value(x,y) -> match x with
-                                    | :? int -> Number(Some(x :?> int), None)
+                                    | :? int -> 
+                                        New(Identifier("System.Int32", false), [Number(Some(x :?> int), None)], None)
+                                    
+                                    //Number(Some(x :?> int), None)
                                     | :? float -> Number(None, Some(x :?> float))
                                     | :? string -> 
                                         let jsonString = serializeToJson x
