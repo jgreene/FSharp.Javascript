@@ -271,7 +271,6 @@ let convertToAst quote =
                 let statement = traverse s
                 Call(Function(Block([If(statement,body,Some(els), false)]), [], None), [])
                 
-            
         | Patterns.Let(v, r, a) ->
             match r with
             | Let(x,y,z) -> 
@@ -298,7 +297,6 @@ let convertToAst quote =
             let functions = [for (v,l) in lets -> Assign(Identifier(cleanName v.Name, true), traverse l)]
             let after = traverse e
             Block(after::functions)
-
         | Patterns.Lambda(v,x) ->
             let arg = Identifier(cleanName v.Name, false)
             let body = rewriteBodyWithReturn (traverse x)

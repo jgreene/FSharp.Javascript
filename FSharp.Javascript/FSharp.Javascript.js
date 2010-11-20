@@ -261,9 +261,21 @@ function MatchFailureException(file, line, character) {
 }
 
 function Tuple() {
+    this.args = arguments
     for (var i = 1; i <= arguments.length + 1; i++) {
         this['Item' + i] = arguments[i - 1];
     }
+}
+
+Tuple.prototype.toString = function () {
+    var result = "("
+    for (var i = 0; i < this.args.length; i++) {
+        result = result + this.args[i].toString()
+        if (i != (this.args.length - 1)) {
+            result = result + ", "
+        }
+    }
+    return result + ")"
 }
 
 Microsoft.FSharp.Core.FSharpOption = {
@@ -994,13 +1006,14 @@ Microsoft.FSharp.Collections.SeqModule = {
                     last: state,
                     read: function () {
                         if (this.isFirst) {
-                            this.isFirst = false
+
                             return true
                         }
                         return source.read()
                     },
                     get: function () {
                         if (this.isFirst) {
+                            this.isFirst = false
                             return this.last
                         }
 
@@ -1270,45 +1283,492 @@ Array.prototype.get_Length = function () {
 registerNamespace('Microsoft.FSharp.Collections');
 
 Microsoft.FSharp.Collections.ArrayModule = {
-    Fold: function (func) {
-        return Microsoft.FSharp.Collections.SeqModule.Fold(func)
-    },
+    seq: Microsoft.FSharp.Collections.SeqModule,
 
-    Map: function (func) {
-        return function (source) {
-            var newArr = []
-            while (source.read()) {
-                var item = source.get()
-                var result = func(item)
-                newArr.push(result)
-            }
+    OfSeq: Microsoft.FSharp.Collections.SeqModule.ToArray,
 
-            return newArr
+    Append: function (source1) {
+        var self = this
+        return function (source2) {
+            var final = self.seq.Append(source1)(source2)
+            return self.seq.ToArray(final)
         }
     },
 
-    Iterate: function (func) {
+    Average: Microsoft.FSharp.Collections.SeqModule.Average,
+
+    AverageBy: Microsoft.FSharp.Collections.SeqModule.AverageBy,
+
+    CopyTo: function (source1) {
+        var self = this
+        return function (startIndex1) {
+            return function (source2) {
+                return function (startIndex2) {
+                    return function (num) {
+                        var outer1 = startIndex1
+                        var outer2 = startIndex2
+                        for (var a = 0; a < num; a++) {
+                            source2[outer2] = source1[outer1]
+
+                            outer1++
+                            outer2++
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    Choose: function (func) {
+        var self = this
         return function (source) {
-            while (source.read()) {
-                var item = source.get()
-                func(item)
+            var temp = self.seq.Choose(func)(source)
+            return self.OfSeq(temp)
+        }
+    },
+
+    Collect: function (func) {
+        var self = this
+        return function (source) {
+            return self.OfSeq(self.seq.Collect(func)(source))
+        }
+    },
+
+    Concat: function (source) {
+        var arr = []
+        while (source.read()) {
+            var innerSource = source.get()
+            while (innerSource.read()) {
+                arr.push(innerSource.get())
+            }
+        }
+
+        return arr;
+    },
+
+    Copy: function (source) {
+        return this.OfSeq(source)
+    },
+
+    Create: function (num) {
+        return function (value) {
+            var arr = []
+            for (var i = 0; i < num; i++) {
+                arr.push(value)
+            }
+
+            return arr;
+        }
+    },
+
+    Empty: function () { return [] },
+
+    Exists: Microsoft.FSharp.Collections.SeqModule.Exists,
+
+    Exists2: Microsoft.FSharp.Collections.SeqModule.Exists2,
+
+    Fill: function (target) {
+        return function (firstIndex) {
+            return function (num) {
+                return function (value) {
+
+                    var index = firstIndex
+                    for (var i = 0; i < num; i++) {
+                        target[index] = value
+                        index++
+                    }
+                }
             }
         }
     },
 
     Filter: function (func) {
+        var self = this
         return function (source) {
-            var newArr = []
+            var temp = self.seq.Filter(func)(source)
+            return self.OfSeq(temp)
+        }
+    },
+
+    Find: Microsoft.FSharp.Collections.SeqModule.Find,
+
+    FindIndex: Microsoft.FSharp.Collections.SeqModule.FindIndex,
+
+    Fold: Microsoft.FSharp.Collections.SeqModule.Fold,
+
+    Fold2: function (func) {
+        var self = this
+        return function (state) {
+            return function (source1) {
+                return function (source2) {
+                    if (source1.length != source2.length) {
+                        throw new "ArgumentException"
+                    }
+                    var val = state
+                    for (var i = 0; i < source1.length; i++) {
+                        val = func(val)(source1[i])(source2[i])
+                    }
+
+                    return val
+                }
+            }
+        }
+    },
+
+    FoldBack: function (func) {
+        var self = this
+        return function (source) {
+            return function (acc) {
+
+                var val = acc
+                for (var i = (source.length - 1); i >= 0; i--) {
+                    val = func(source[i])(val)
+                }
+
+                return val
+            }
+        }
+    },
+
+    FoldBack2: function (func) {
+        return function (source1) {
+            return function (source2) {
+                return function (state) {
+                    if (source1.length != source2.length) {
+                        throw new "ArgumentException"
+                    }
+
+                    var val = state
+                    for (var i = (source1.length - 1); i >= 0; i--) {
+                        val = func(source1[i])(source2[i])(val)
+                    }
+
+                    return val
+                }
+            }
+        }
+    },
+
+    ForAll: Microsoft.FSharp.Collections.SeqModule.ForAll,
+
+    ForAll2: Microsoft.FSharp.Collections.SeqModule.ForAll2,
+
+    Get: function (source) {
+        return function (index) {
+            return source[index]
+        }
+    },
+
+    Initialize: function (num) {
+        var self = this
+        return function (func) {
+            var temp = self.seq.Initialize(num)(func)
+            return self.OfSeq(temp)
+        }
+    },
+
+    IsEmpty: Microsoft.FSharp.Collections.SeqModule.IsEmpty,
+
+    Iterate: Microsoft.FSharp.Collections.SeqModule.Iterate,
+
+    Iterate2: Microsoft.FSharp.Collections.SeqModule.Iterate2,
+
+    IterateIndexed: Microsoft.FSharp.Collections.SeqModule.IterateIndexed,
+
+    IterateIndexed2: function (func) {
+        return function (source1) {
+            return function (source2) {
+
+                var i = 0
+                while (source1.read() && source2.read()) {
+                    var item1 = source1.get()
+                    var item2 = source2.get()
+                    func(i)(item1)(item2)
+
+                    i++
+                }
+            }
+        }
+    },
+
+    Length: function (source) {
+        return source.length
+    },
+
+    Map: function (func) {
+        var self = this
+        return function (source) {
+            return self.OfSeq(self.seq.Map(func)(source))
+        }
+    },
+
+    Map2: function (func) {
+        var self = this
+        return function (source) {
+            return function (source2) {
+                return self.OfSeq(self.seq.Map2(func)(source)(source2))
+            }
+        }
+    },
+
+    MapIndexed: function (func) {
+        var self = this
+        return function (source) {
+            return self.OfSeq(self.seq.MapIndexed(func)(source))
+        }
+    },
+
+    MapIndexed2: function (func) {
+        return function (source1) {
+            return function (source2) {
+                var arr = []
+                var i = 0
+                while (source1.read() && source2.read()) {
+                    var item1 = source1.get()
+                    var item2 = source2.get()
+                    var result = func(i)(item1)(item2)
+                    arr.push(result)
+                    i++
+                }
+                return arr
+            }
+        }
+    },
+
+    Max: Microsoft.FSharp.Collections.SeqModule.Max,
+
+    MaxBy: Microsoft.FSharp.Collections.SeqModule.MaxBy,
+
+    Min: Microsoft.FSharp.Collections.SeqModule.Min,
+
+    MinBy: Microsoft.FSharp.Collections.SeqModule.MinBy,
+
+    OfList: Microsoft.FSharp.Collections.SeqModule.ToList,
+
+    Partition: function (func) {
+        return function (source) {
+            var arr1 = []
+            var arr2 = []
+
             while (source.read()) {
                 var item = source.get()
                 if (func(item)) {
-                    newArr.push(item)
+                    arr1.push(item)
+                } else {
+                    arr2.push(item)
                 }
             }
 
-            return newArr;
+            return new Tuple(arr1, arr2)
         }
-    }
+    },
+
+    Permute: function (func) {
+        return function (source) {
+            var arr = []
+
+            var i = 0
+            while (source.read()) {
+                var item = source.get()
+                var index = func(i)
+                arr[index] = item
+                i++
+            }
+
+            return arr
+        }
+    },
+
+    Pick: Microsoft.FSharp.Collections.SeqModule.Pick,
+
+    Reduce: Microsoft.FSharp.Collections.SeqModule.Reduce,
+
+    ReduceBack: function (func) {
+        return function (source) {
+            var acc = null
+            for (var i = (source.length - 1); i >= 0; i--) {
+                if (acc == null) {
+                    acc = source[i]
+                    continue;
+                }
+
+                acc = func(acc)(source[i])
+            }
+
+            return acc
+        }
+    },
+
+    Reverse: function (source) {
+        var arr = []
+        for (var i = (source.length - 1); i >= 0; i--) {
+            arr.push(source[i])
+        }
+        return arr
+    },
+
+    Scan: function (func) {
+        var self = this
+        return function (state) {
+            return function (source) {
+                var temp = self.seq.Scan(func)(state)(source)
+                return self.OfSeq(temp)
+            }
+        }
+    },
+
+    ScanBack: function (func) {
+        return function (source) {
+            return function (state) {
+                var arr = []
+
+                var val = state
+                for (var i = (source.length - 1); i >= 0; i--) {
+                    var item = source[i]
+                    val = func(item)(val)
+                    arr[i] = val
+                }
+
+                arr.push(state)
+
+                return arr
+            }
+        }
+    },
+
+    Set: function (source) {
+        return function (index) {
+            return function (item) {
+                source[index] = item
+            }
+        }
+    },
+
+    Sort: function (source) {
+        var temp = this.OfSeq(source)
+        this.SortInPlace(temp)
+        return temp
+
+    },
+
+    SortBy: function (func) {
+        var self = this
+        return function (source) {
+            var temp = self.OfSeq(source)
+            self.SortInPlaceBy(func)(temp)
+            return temp
+        }
+    },
+
+    SortInPlace: function (source) {
+        source.sort(function (a, b) { return Microsoft.FSharp.Core.Operators.op_Subtraction(a)(b) })
+    },
+
+    SortInPlaceBy: function (func) {
+        var self = this
+        return function (source) {
+            source.sort(function (a, b) {
+                var item1 = func(a)
+                var item2 = func(b)
+                return Microsoft.FSharp.Core.Operators.op_Subtraction(item1)(item2)
+            })
+        }
+    },
+
+    SortInPlaceWith: function (func) {
+        var self = this
+        return function (source) {
+            source.sort(function (a, b) {
+                return func(a)(b)
+            })
+        }
+    },
+
+    SortWith: function (func) {
+        var self = this
+        return function (source) {
+            var temp = self.OfSeq(source)
+            self.SortInPlaceWith(func)(temp)
+            return temp
+        }
+    },
+
+    GetSubArray: function (source) {
+        var self = this
+        return function (start) {
+            return function (num) {
+                return self.OfSeq(self.seq.Take(num)(self.seq.Skip(start)(source)))
+            }
+        }
+    },
+
+    Sum: function (source) {
+        return this.SumBy(function (x) { return x })(source)
+    },
+
+    SumBy: function (func) {
+        var self = this
+        return function (source) {
+            var val = 0
+            while (source.read()) {
+                var item = source.get()
+                val = val + func(item)
+            }
+            return val
+        }
+    },
+
+    ToList: Microsoft.FSharp.Collections.SeqModule.ToList,
+
+    ToSeq: function (source) {
+        return new Sequence(source)
+    },
+
+    TryFind: Microsoft.FSharp.Collections.SeqModule.TryFind,
+
+    TryFindIndex: Microsoft.FSharp.Collections.SeqModule.TryFindIndex,
+
+    TryPick: Microsoft.FSharp.Collections.SeqModule.TryPick,
+
+    Unzip: function (source) {
+        var arr1 = []
+        var arr2 = []
+        while (source.read()) {
+            var item = source.get()
+            arr1.push(item.Item1)
+            arr2.push(item.Item2)
+        }
+
+        return new Tuple(arr1, arr2)
+    },
+
+    Unzip3: function(source){
+        var arr1 = []
+        var arr2 = []
+        var arr3 = []
+        while (source.read()) {
+            var item = source.get()
+            arr1.push(item.Item1)
+            arr2.push(item.Item2)
+            arr3.push(item.Item3)
+        }
+
+        return new Tuple(arr1, arr2, arr3)
+    },
+
+    ZeroCreate: function (num) {
+        var arr = []
+        for (var i = 0; i < num; i++) {
+            arr.push(0)
+        }
+
+        return arr;
+    },
+
+    Zip: Microsoft.FSharp.Collections.SeqModule.Zip,
+
+    Zip3: Microsoft.FSharp.Collections.SeqModule.Zip3,
+
 }
 
 Microsoft.FSharp.Collections.FSharpList = {
