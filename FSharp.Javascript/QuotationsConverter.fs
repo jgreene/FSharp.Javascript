@@ -117,6 +117,30 @@ let getMemberAccess (name:string, t:System.Type, nameSpace:string) =
 let serializeToJson x =
     let serializer = new System.Web.Script.Serialization.JavaScriptSerializer()
     serializer.Serialize(x)
+
+let getNameAndMap (name:string) (map:Map<string,string list>) = 
+    let getNextName name =
+        let rec loop (name:string) num =
+            if name.EndsWith(num.ToString()) then
+                loop name (num + 1)
+            else
+                name + (num.ToString())
+        loop name 1
+                    
+                    
+    if map.ContainsKey(name) then
+        let value = map.[name]
+        match value with
+        | h::t -> 
+            let nextName = getNextName h
+            let map = map.Remove(name).Add(name,nextName::h::t)
+            (nextName, map)
+        | [] -> 
+            let nextName = getNextName name
+            let map = map.Remove(name).Add(name,nextName::[])
+            (nextName, map)
+    else
+        (name, map.Add(name, []))
         
 
 let convertToAst quote =
@@ -199,8 +223,8 @@ let convertToAst quote =
                                     | _ -> pos
 
                                 let lastTuplePosition = (getTuplePositions x position)
-
-                                let arguments = [for pos in { position .. (lastTuplePosition) - 1 } -> traverse (args'.[pos]) map] |> List.rev
+                                let newName,newMap = getNameAndMap v.Name map
+                                let arguments = [for pos in { position .. (lastTuplePosition) - 1 } -> traverse (args'.[pos]) newMap] |> List.rev
                                 let tuple = createTuple arguments
                                 loop x lastTuplePosition (tuple::acc)
                             | Patterns.Lambda(v,x) when v.Type.Name = "Unit" || position > (args'.Length - 1) ->
@@ -210,8 +234,9 @@ let convertToAst quote =
                             | Patterns.Lambda(v,x) -> 
                                 let args = args'
                                 let arg = args.[position]
+                                let newName,newMap = getNameAndMap v.Name map
                                 if arg.Type = v.Type then
-                                    let result = traverse arg map
+                                    let result = traverse arg newMap
                                     loop x (position + 1) (result::acc)
                                 else
                                     loop x position acc
@@ -261,44 +286,22 @@ let convertToAst quote =
 
             match s with
             | Let(x,y,z) -> 
+                let newName,newMap = getNameAndMap x.Name map
                 let body = match b with
                             | Let(p,o,i) when p.Name = x.Name && y = o ->
-                                rewriteBodyWithReturn(traverse i map)
+                                rewriteBodyWithReturn(traverse i newMap)
                             | _ -> rewriteBodyWithReturn (traverse b map)
                 let result = traverse y map
-                let statement = traverse z map
+                let statement = traverse z newMap
                 let after = Call(Function(Block([If(statement,body,Some(els), false)]), [], None), [])
-                Block([after;Assign(Identifier(x.Name, true), result)])
+                Block([after;Assign(Identifier(newName, true), result)])
             | _ -> 
                 let body = rewriteBodyWithReturn (traverse b map)
                 let statement = traverse s map
                 Call(Function(Block([If(statement,body,Some(els), false)]), [], None), [])
                 
         | Patterns.Let(v, r, a) ->
-            let getNameAndMap (name:string) (map:Map<string,string list>) =
-                
-                let getNextName name =
-                    let rec loop (name:string) num =
-                        if name.EndsWith(num.ToString()) then
-                            loop name (num + 1)
-                        else
-                            name + (num.ToString())
-                    loop name 1
-                    
-                    
-                if map.ContainsKey(name) then
-                    let value = map.[name]
-                    match value with
-                    | h::t -> 
-                        let nextName = getNextName h
-                        let map = map.Remove(name).Add(name,nextName::h::t)
-                        (nextName, map)
-                    | [] -> 
-                        let nextName = getNextName name
-                        let map = map.Remove(name).Add(name,nextName::[])
-                        (nextName, map)
-                else
-                    (name, map.Add(name, []))
+            
                     
             let newName,newMap = getNameAndMap v.Name map
 
@@ -325,12 +328,16 @@ let convertToAst quote =
                 let le = Assign(Identifier(newName, true), right)
                 Block(afterResult@[le])
         | Patterns.LetRecursive(lets, e) -> 
-            let functions = [for (v,l) in lets -> Assign(Identifier(cleanName v.Name, true), traverse l map)]
+            
+            let functions = [for (v,l) in lets -> 
+                                            let newName,newMap = getNameAndMap v.Name map
+                                            Assign(Identifier(cleanName newName, true), traverse l newMap)]
             let after = traverse e map
             Block(after::functions)
         | Patterns.Lambda(v,x) ->
-            let arg = Identifier(cleanName v.Name, false)
-            let body = rewriteBodyWithReturn (traverse x map)
+            let newName,newMap = getNameAndMap v.Name map
+            let arg = Identifier(cleanName newName, false)
+            let body = rewriteBodyWithReturn (traverse x newMap)
             Function(body, [arg], None)
         | Patterns.Application(l,r) ->
             let left = traverse l map

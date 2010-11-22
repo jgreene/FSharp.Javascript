@@ -12,6 +12,40 @@
 
 registerNamespace('System')
 
+System.Int32 = function(x){
+    this.value = x
+}
+
+System.Int32.prototype.valueOf = function(){
+    return parseInt(this.value, 0)
+}
+
+System.Int32.prototype.op_Division = function(x){
+    return parseInt((this / x), 0)
+}
+
+System.Int32.prototype.op_Addition = function(x){
+    return parseInt((this + x), 0)
+}
+
+System.Int32.prototype.op_Subtraction = function(x){
+    return parseInt((this - x), 0)
+}
+
+System.Int32.prototype.op_Multiply = function(x){
+    return parseInt((this * x), 0)
+}
+
+System.Int32.prototype.op_Modulus = function(x){
+    return parseInt((this % x), 0)
+}
+
+System.Int32.prototype.toString = function(){
+    return this.valueOf().toString()
+}
+
+
+
 registerNamespace('Microsoft.FSharp.Core')
 
 registerNamespace('Microsoft.FSharp.Collections')
@@ -24,7 +58,9 @@ Microsoft.FSharp.Core.Operators = {
             if (x.op_Addition) {
                 return x.op_Addition(y)
             }
-            return x + y;
+
+            
+            return x.valueOf() + y.valueOf();
         }
     },
 
@@ -33,7 +69,7 @@ Microsoft.FSharp.Core.Operators = {
             if (x.op_Subtraction) {
                 return x.op_Subtraction(y)
             }
-            return x - y;
+            return x.valueOf() - y.valueOf();
         }
     },
 
@@ -43,7 +79,7 @@ Microsoft.FSharp.Core.Operators = {
                 return x.op_Multiply(y);
             }
 
-            return x * y;
+            return x.valueOf() * y.valueOf();
         }
     },
 
@@ -53,7 +89,7 @@ Microsoft.FSharp.Core.Operators = {
                 return x.op_Division(y);
             }
 
-            return x / y;
+            return x.valueOf() / y.valueOf();
         }
     },
 
@@ -63,7 +99,7 @@ Microsoft.FSharp.Core.Operators = {
                 return x.op_Modulus(y)
             }
 
-            return x % y;
+            return x.valueOf() % y.valueOf();
         }
     },
 
@@ -73,7 +109,7 @@ Microsoft.FSharp.Core.Operators = {
                 return x.op_LessThanOrEqual(y)
             }
 
-            return x <= y;
+            return x.valueOf() <= y.valueOf();
         }
     },
 
@@ -83,7 +119,7 @@ Microsoft.FSharp.Core.Operators = {
                 return x.op_LessThan(y)
             }
 
-            return x < y;
+            return x.valueOf() < y.valueOf();
         }
     },
 
@@ -93,7 +129,7 @@ Microsoft.FSharp.Core.Operators = {
                 return x.op_GreaterThan(y)
             }
 
-            return x > y;
+            return x.valueOf() > y.valueOf();
         }
     },
 
@@ -102,7 +138,7 @@ Microsoft.FSharp.Core.Operators = {
             if (x.op_GreaterThanOrEqual) {
                 return x.op_GreaterThanOrEqual(y)
             }
-            return x >= y;
+            return x.valueOf() >= y.valueOf();
         }
     },
 
@@ -124,12 +160,15 @@ Microsoft.FSharp.Core.Operators = {
                 return one.Equality(two);
             };
 
-            return one === two;
+            return one.valueOf() === two.valueOf();
         };
     },
 
     ToDouble: function (x) {
-        return x;
+        if(x instanceof System.Int32){
+            return x.value
+        }
+        return x.valueOf();
     },
 
     op_Append: function (item1) {
@@ -598,7 +637,7 @@ Microsoft.FSharp.Collections.SeqModule = {
                 var key = func(item)
 
                 var result = Microsoft.FSharp.Collections.SeqModule.TryFind(function (x) {
-                    if (key == x.Item1) {
+                    if (Microsoft.FSharp.Core.Operators.op_Equality(key)(x.Item1)) {
                         return true
                     }
                     return false
@@ -606,7 +645,7 @@ Microsoft.FSharp.Collections.SeqModule = {
 
                 if (Microsoft.FSharp.Core.FSharpOption.get_IsSome(result)) {
                     var tuple = result.get_Value()
-                    tuple.Item2 = tuple.Item2 + 1
+                    tuple.Item2 = Microsoft.FSharp.Core.Operators.op_Addition(tuple.Item2)(1)
                 } else {
                     var tuple = new Tuple(key, 1)
                     arr.push(tuple)
@@ -759,7 +798,7 @@ Microsoft.FSharp.Collections.SeqModule = {
                 var key = func(item)
 
                 var result = Microsoft.FSharp.Collections.SeqModule.TryFind(function (x) {
-                    if (key == x.Item1) {
+                    if (Microsoft.FSharp.Core.Operators.op_Equality(key)(x.Item1)) {
                         return true
                     }
                     return false
@@ -1782,7 +1821,7 @@ Microsoft.FSharp.Collections.FSharpList = {
         };
 
         this.get_Length = function () {
-            return this.Length
+            return new System.Int32(this.Length)
         };
 
         this.get_Head = function () {
@@ -1825,7 +1864,7 @@ Microsoft.FSharp.Collections.FSharpList = {
         };
 
         this.get_Length = function () {
-            return this.Length
+            return new System.Int32(this.Length)
         };
 
         this.get_Head = function () {
@@ -1926,7 +1965,7 @@ Microsoft.FSharp.Collections.FSharpMap = {
         };
 
         this.get_Count = function () {
-            return this.Count
+            return new System.Int32(this.Count)
         };
 
         this.get_Head = function () {
@@ -1982,7 +2021,7 @@ Microsoft.FSharp.Collections.FSharpMap = {
         };
 
         this.get_Count = function () {
-            return this.Count
+            return new System.Int32(this.Count)
         };
 
         this.get_Head = function () {
@@ -2235,7 +2274,7 @@ String.prototype.Replace = function(search, replace) {
     return this.replace(search, replace)
 }
 String.prototype.get_Length = function(){
-    return this.length
+    return new System.Int32(this.length)
 }
 
 

@@ -12,7 +12,7 @@ and Document() =
     member this.getElementById(x:string) = ()
 
 and HtmlElement() =
-    member this.children : HtmlElement list = []
+    member this.children : HtmlElement array = [||]
     member this.innerHTML = ""
     member this.innerText = ""
 

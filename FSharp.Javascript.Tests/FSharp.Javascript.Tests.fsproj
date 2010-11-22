@@ -62,6 +62,7 @@
     <Compile Include="RegexTests.fs" />
     <Compile Include="ArrayModuleTests.fs" />
     <Compile Include="SeqModuleTests.fs" />
+    <Compile Include="ListModuleTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.PowerPack.Linq">

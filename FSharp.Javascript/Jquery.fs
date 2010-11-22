@@ -336,12 +336,14 @@ type jquery(x:System.Object) =
     static member pushStack(x) = new jquery(null)
     static member pushStack(x,y,z) = new jquery(null)
 
-//uncommenting this gives a very strange error.
-//    static member queue(x) = [||]
-//    static member queue(a,b) = [||]
-//    static member queue(c,y,z) = [||]
-//    static member removeData(element) = new jquery(null)
-//    static member removeData(element,name) = new jquery(null)
+
+    static member queue(x) = [||] : obj array
+    static member queue(a,b) = [||] : obj array
+    static member queue(c,y,z) = [||] : obj array
+    //uncommenting this gives a very strange error.
+    //static member removeData(element) = new jquery(null)
+    static member removeData(element, name) = new jquery(null)
+    
     static member support = new support()
     static member trim(x:string) = ""
     static member unique(x) = [||]

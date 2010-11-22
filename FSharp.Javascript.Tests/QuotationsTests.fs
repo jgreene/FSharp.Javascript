@@ -693,3 +693,9 @@ type QuotationsTests() =
     member this.``Division on uneven int results in int``() =
         test <@ let result = 3 / 2
                 emit result @>
+
+    [<Test>]
+    member this.``Anonymous lambda with multiple arguments fires correctly`` () =
+        test <@ (fun x y -> 
+                    let result = (x + y)
+                    emit result)(1)(2) @>
