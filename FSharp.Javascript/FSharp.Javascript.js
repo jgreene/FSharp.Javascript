@@ -2329,6 +2329,10 @@ Microsoft.FSharp.Collections.FSharpMap = {
             return false
         };
 
+        this.reset = function(){
+            this.ReadState = null
+        };
+
         this.ContainsKey = function (key) {
             return false;
         };
@@ -2338,20 +2342,12 @@ Microsoft.FSharp.Collections.FSharpMap = {
         };
 
         this.Remove = function (key) {
-            var result = new Microsoft.FSharp.Collections.FSharpMap.Empty()
-            while (this.read()) {
-                var item = this.get()
-                if (item.key != key) {
-                    result = new Microsoft.FSharp.Collections.FSharpMap.Cons(result, item)
-                }
-            }
-
-            return result;
+            return Microsoft.FSharp.Collections.MapModule.Remove(key)(this)
         };
 
     },
 
-    Cons : function (list, arg) {
+    Cons : function (arg, list) {
         this.ReadState = null;
         this.Count = list.Count + 1;
         this.Head = arg;
@@ -2359,10 +2355,16 @@ Microsoft.FSharp.Collections.FSharpMap = {
         this.Tail = list;
 
         this.get_Item = function (x) {
-            if (x == 0)
-                return this.Head;
-            else
-                return this.Tail.get_Item(x - 1);
+            
+            while(this.read()){
+                var item = this.get()
+                if(Microsoft.FSharp.Core.Operators.op_Equality(item.key)(x)){
+                    this.reset()
+                    return item.value
+                }
+            }
+
+            return null
         };
 
         this.get_Count = function () {
@@ -2386,15 +2388,7 @@ Microsoft.FSharp.Collections.FSharpMap = {
         };
 
         this.Remove = function (key) {
-            var result = new Microsoft.FSharp.Collections.FSharpMap.Empty()
-            while (this.read()) {
-                var item = this.get()
-                if (item.key != key) {
-                    result = new Microsoft.FSharp.Collections.FSharpMap.Cons(result, item)
-                }
-            }
-
-            return result;
+            return Microsoft.FSharp.Collections.MapModule.Remove(key)(this)
         };
 
        this.read = function () {
@@ -2411,8 +2405,19 @@ Microsoft.FSharp.Collections.FSharpMap = {
             return true;
         };
 
+        this.getFunc = function(x){
+            if (x == 0)
+                return this.Head;
+            else
+                return this.Tail.getFunc(x - 1);
+        }
+
         this.get = function () {
-            return this.get_Item(this.ReadState)
+            return this.getFunc(this.ReadState)
+        };
+
+        this.reset = function(){
+            this.ReadState = null;
         };
 
         this.ContainsKey = function (key) {
@@ -2423,58 +2428,337 @@ Microsoft.FSharp.Collections.FSharpMap = {
 }
 
 Microsoft.FSharp.Collections.MapModule = {
-    Empty : function () {
-        return new Microsoft.FSharp.Collections.FSharpMap.Empty();
-    },
+    list : Microsoft.FSharp.Collections.ListModule,
+    seq : Microsoft.FSharp.Collections.SeqModule,
+    
     Add : function (key) {
         return function (value) {
             return function (source) {
                 var item = { key: key, value: value }
-                return new Microsoft.FSharp.Collections.FSharpMap.Cons(source, item)
+                return new Microsoft.FSharp.Collections.FSharpMap.Cons(item, source)
             }
-        }
-    },
-
-    Find : function (key) {
-        return function (source) {
-            var result = null;
-            while (source.read()) {
-                var item = source.get()
-                if (item.key == key) {
-                    result = item.value;
-                }
-            }
-
-            return result;
-        }
-    },
-
-    TryFind : function (key) {
-        return function (source) {
-            var result = new Microsoft.FSharp.Core.FSharpOption.None();
-            while (source.read()) {
-                var item = source.get()
-                if (item.key == key) {
-                    result = new Microsoft.FSharp.Core.FSharpOption.Some(item.value);
-                }
-            }
-
-            return result
         }
     },
 
     ContainsKey : function (key) {
         return function (source) {
-            var result = false;
             while (source.read()) {
                 var item = source.get()
-                if (item.key == key)
-                    result = true;
+                if (Microsoft.FSharp.Core.Operators.op_Equality(item.key)(key)) {
+                    source.reset()
+                    return true
+                }
             }
 
-            return result;
+            return false;
+        }
+    },
+
+    Empty : function () {
+        return new Microsoft.FSharp.Collections.FSharpMap.Empty();
+    },
+
+    Exists: function(func){
+        return function(source){
+            while(source.read()){
+                var item = source.get()
+                var result = func(item.key)(item.value)
+                if(result)
+                {
+                    source.reset()
+                    return true
+                }
+            }
+
+            return false
+        }
+    },
+
+    Filter: function(func){
+        var self = this
+        return function(source){
+            var map = self.Empty()
+            while(source.read()){
+                var item = source.get()
+                if(func(item.key)(item.value)){
+                    map = self.Add(item.key)(item.value)(map)
+                }
+            }
+            return map
+        }
+    },
+
+    Find : function (key) {
+        return function (source) {
+            while (source.read()) {
+                var item = source.get()
+                if (Microsoft.FSharp.Core.Operators.op_Equality(item.key)(key)) {
+                    source.reset()
+                    return item.value
+                }
+            }
+
+            return null;
+        }
+
+    },
+
+    FindKey: function(func){
+        var self = this
+        return function(source){
+            while(source.read()){
+                var item = source.get()
+                var result = func(item.key)(item.value)
+                if(result){
+                    source.reset()
+                    return item.key
+                }
+            }
+
+            throw new "KeyNotFoundException"
+        }
+    },
+
+    Fold: function(func){
+        var self = this
+        return function(state){
+            return function(source){
+                var acc = state
+                while(source.read()){
+                    var item = source.get()
+                    acc = func(acc)(item.key)(item.value)
+                }
+
+                return acc
+            }
+        }
+    },
+
+    FoldBack: function(func){
+        var self = this
+        return function(source){
+            return function(state){
+                var val = state
+                while(source.read()){
+                    var item = source.get()
+                    val = func(item.key)(item.value)(val)
+                }
+
+                return val
+            }
+        }
+    },
+
+    ForAll: function(func){
+        var self = this
+        return function(source){
+            while(source.read()){
+                var item = source.get()
+                var result = func(item.key)(item.value)
+                if(!result){
+                    source.reset();
+                    return false
+                }
+            }
+            return true
+        }
+    },
+
+    IsEmpty: function(source){
+        return source.IsEmpty;
+    },
+
+    Iterate: function(func){
+        return function(source){
+            while(source.read()){
+                var item = source.get()
+                func(item.key)(item.value)
+            }
+        }
+    },
+
+    Map: function(func){
+        var self = this
+        return function(source){
+            var map = self.Empty()
+            while(source.read()){
+                var item = source.get()
+                var result = func(item.key)(item.value)
+                map = self.Add(item.key)(result)(map)
+            }
+
+            return self.Reverse(map)
+        }
+    },
+
+    Reverse: function(source){
+        var map = this.Empty()
+        while(source.read()){
+            var item = source.get()
+            map = this.Add(item.key)(item.value)(map)
+        }
+        return map
+    },
+
+    OfArray: function(source){
+        return this.OfSeq(source)
+    },
+
+    OfList: function(source){
+        var map = this.Empty()
+        var reversed = this.list.Reverse(source)
+        while(reversed.read()){
+            var item = reversed.get()
+            map = this.Add(item.Item1)(item.Item2)(map)
+        }
+
+        return map
+    },
+
+    OfSeq: function(source){
+        var map = this.Empty()
+        while(source.read()){
+            var item = source.get()
+            map = this.Add(item.Item1)(item.Item2)(map)
+        }
+
+        return map
+    },
+
+    Partition: function(func){
+        var self = this
+        return function(source){
+            var map1 = self.Empty()
+            var map2 = self.Empty()
+
+            while (source.read()) {
+                var item = source.get()
+                if (func(item.key)(item.value)) {
+                    map1 = self.Add(item.key)(item.value)(map1)
+                } else {
+                    map2 = self.Add(item.key)(item.value)(map2)
+                }
+            }
+
+            return new Tuple(self.Reverse(map1), self.Reverse(map2))
+        }
+    },
+
+    TryPick: function (func) {
+        var self = this
+        return function (source) {
+            var mapped = self.Map(func)(source)
+            return self.TryFind(function (x) {
+                return Microsoft.FSharp.Core.FSharpOption.get_IsSome(x)
+            })(mapped).get_Value()
+        }
+    },
+
+    Pick: function (func) {
+        var self = this
+        return function (source) {
+            while(source.read()){
+                var item = source.get()
+                var result = func(item.key)(item.value)
+                if(Microsoft.FSharp.Core.FSharpOption.get_IsSome(result))
+                {
+                    source.reset()
+                    return result.get_Value();
+                }
+            }
+
+            return null
+        }
+    },
+
+    Remove: function(key){
+        var self = this
+        return function(source){
+            var result = new Microsoft.FSharp.Collections.FSharpMap.Empty()
+            while (source.read()) {
+                var item = source.get()
+                if(Microsoft.FSharp.Core.Operators.op_Inequality(item.key)(key)){
+                    result = new Microsoft.FSharp.Collections.FSharpMap.Cons(item, result)
+                }
+            }
+
+            return self.Reverse(result)
+        }
+    },
+
+    ToArray: function(source){
+        var arr = []
+        while(source.read()){
+            var item = source.get()
+            var tup = new Tuple(item.key, item.value)
+            arr.push(tup)
+        }
+
+        return arr
+    },
+
+    ToList: function(source){
+        var result = this.list.Empty()
+        while(source.read()){
+            var item = source.get()
+            var tup = new Tuple(item.key, item.value)
+            result = new Microsoft.FSharp.Collections.FSharpList.Cons(tup, result)
+        }
+
+        return this.list.Reverse(result)
+    },
+
+    ToSeq: function(source){
+        return new Sequence(this.ToArray(source))
+    },
+
+    TryFind : function (key) {
+        return function (source) {
+            while (source.read()) {
+                var item = source.get()
+                if (Microsoft.FSharp.Core.Operators.op_Equality(item.key)(key)) {
+                    source.reset()
+                    return new Microsoft.FSharp.Core.FSharpOption.Some(item.value);
+                }
+            }
+
+            return new Microsoft.FSharp.Core.FSharpOption.None();
+        }
+    },
+
+    TryFindKey: function(func){
+        var self = this
+        return function(source){
+            while(source.read()){
+                var item = source.get()
+                var result = func(item.key)(item.value)
+                if(result){
+                    source.reset()
+                    return new Microsoft.FSharp.Core.FSharpOption.Some(item.key)
+                }
+            }
+
+            return new Microsoft.FSharp.Core.FSharpOption.None();
+        }
+    },
+
+    TryPick: function(func){
+        var self = this;
+        return function(source){
+            while(source.read()){
+                var item = source.get()
+                var result = func(item.key)(item.value)
+                if(Microsoft.FSharp.Core.FSharpOption.get_IsSome(result)){
+                    source.reset();
+                    return result;
+                }
+            }
+
+            return new Microsoft.FSharp.Core.FSharpOption.None();
         }
     }
+
+    
 }
 
 Pad = function (number, length) {

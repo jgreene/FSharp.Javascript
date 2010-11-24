@@ -223,8 +223,7 @@ let convertToAst quote =
                                     | _ -> pos
 
                                 let lastTuplePosition = (getTuplePositions x position)
-                                let newName,newMap = getNameAndMap v.Name map
-                                let arguments = [for pos in { position .. (lastTuplePosition) - 1 } -> traverse (args'.[pos]) newMap] |> List.rev
+                                let arguments = [for pos in { position .. (lastTuplePosition) - 1 } -> traverse (args'.[pos]) map] |> List.rev
                                 let tuple = createTuple arguments
                                 loop x lastTuplePosition (tuple::acc)
                             | Patterns.Lambda(v,x) when v.Type.Name = "Unit" || position > (args'.Length - 1) ->
@@ -234,9 +233,8 @@ let convertToAst quote =
                             | Patterns.Lambda(v,x) -> 
                                 let args = args'
                                 let arg = args.[position]
-                                let newName,newMap = getNameAndMap v.Name map
                                 if arg.Type = v.Type then
-                                    let result = traverse arg newMap
+                                    let result = traverse arg map
                                     loop x (position + 1) (result::acc)
                                 else
                                     loop x position acc
@@ -389,7 +387,10 @@ let convertToAst quote =
             let withBody = traverse e map
             let catch = Catch(Identifier(b.Name, false), rewriteBodyWithReturn withBody)
             Call(Function(Try(rewriteBodyWithReturn tryBody, Some(catch), None), [], None), [])
-        
+        | Patterns.TryFinally(l,r) ->
+            let tryBody = traverse l map
+            let finallyBody = traverse r map
+            Call(Function(Try(rewriteBodyWithReturn tryBody, None, Some finallyBody), [], None), [])
         | Patterns.UnionCaseTest(expr, info) ->
             let left = traverse expr map
             InstanceOf(left, getMemberAccess (info.Name, info.DeclaringType, info.DeclaringType.Namespace))
@@ -438,6 +439,7 @@ let convertToAst quote =
            
         | Patterns.Quote(x) ->
             traverse x map   
+        
         | ShapeVar v -> 
             let getVariableName (name:string) (map:Map<string,string list>) =
                 if map.ContainsKey(name) then
