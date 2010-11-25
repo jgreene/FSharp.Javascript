@@ -43,6 +43,7 @@
     <Compile Include="Dom.fs" />
     <Compile Include="Jquery.fs" />
     <Compile Include="Library.fs" />
+    <Compile Include="Canvas.fs" />
     <Content Include="FSharp.Javascript.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -42,7 +42,6 @@
     <Compile Include="QuotationsTests.fs" />
     <Compile Include="ComputationModule.fs" />
     <Compile Include="ComputationExpressionTests.fs" />
-    <Compile Include="DomTests.fs" />
     <Content Include="jquery-1.2.6.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

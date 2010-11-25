@@ -2,7 +2,7 @@
 
 
 FSharp.Javascript.Library = {
-    IsNumber : function(n){
+    IsNumber: function (n) {
         return !isNaN(parseFloat(n)) && isFinite(n);
     },
 
@@ -33,7 +33,7 @@ FSharp.Javascript.Library = {
                 if (FSharp.Javascript.Library.IsNumber(x) == false)
                     return new Microsoft.FSharp.Core.FSharpOption.None();
 
-                var value = parseInt(x)
+                var value = new System.Int32(x)
                 return new Microsoft.FSharp.Core.FSharpOption.Some(value);
             }
         }
@@ -45,7 +45,7 @@ FSharp.Javascript.Library = {
                 if (FSharp.Javascript.Library.IsNumber(x) == false)
                     return new Microsoft.FSharp.Core.FSharpOption.None();
 
-                var value = parseInt(x)
+                var value = new System.Int32(x)
                 return new Microsoft.FSharp.Core.FSharpOption.Some(value);
             }
         }
@@ -57,7 +57,7 @@ FSharp.Javascript.Library = {
                 if (FSharp.Javascript.Library.IsNumber(x) == false)
                     return new Microsoft.FSharp.Core.FSharpOption.None();
 
-                var value = parseInt(x)
+                var value = new System.Int32(x)
                 return new Microsoft.FSharp.Core.FSharpOption.Some(value);
             }
         }
@@ -117,6 +117,20 @@ FSharp.Javascript.Library = {
                 } catch (err) {
                     return new Microsoft.FSharp.Core.FSharpOption.None();
                 }
+            }
+        }
+    },
+
+    op_Dynamic: function (obj) {
+        return function (name) {
+            return obj[name]
+        }
+    },
+
+    op_DynamicAssignment: function (obj) {
+        return function (name) {
+            return function (value) {
+                obj[name] = value;
             }
         }
     }

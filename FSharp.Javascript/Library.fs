@@ -69,3 +69,10 @@ type System.Boolean with
             if success then Some result else None
         with
         | _ -> None
+
+let (?) (this : 'Source) (prop : string) : 'Result =
+          let p = this.GetType().GetProperty(prop)
+          p.GetValue(this, null) :?> 'Result
+
+let (?<-) (this : 'Source) (property : string) (value : 'Value) =
+    this.GetType().GetProperty(property).SetValue(this, value, null)

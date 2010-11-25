@@ -5,9 +5,22 @@ open NUnit.Framework
 open FSharp.Javascript.Printer
 open TestModule
 open QuotationsTestHelper
+open FSharp.Javascript.Library
 
 [<TestFixture>]
 type QuotationsTests() =
+
+    [<Test>]
+    member this.``Dynamic lookup operator``() =
+        test <@ let t = { Prop1 = 1; Prop2 = "blah" }
+                let result = t?Prop1
+                emit result @>
+
+    [<Test>]
+    member this.``Dynamic set operator``() =
+        test <@ let t = new class2("blah", 2)
+                t?Age <- 5
+                emit (t?Age) @>
     
     [<Test>]
     member this.``Addition``() =

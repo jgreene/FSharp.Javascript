@@ -12,5 +12,15 @@ FSharp.Javascript.Dom = {
 
     alert: function (x) {
         window.alert(x)
+    },
+
+    get_Math: function(){
+        return Math;
+    }
+}
+
+FSharp.Javascript.Canvas = {
+    getCanvasById : function(id){
+        return window.document.getElementById(id)
     }
 }
