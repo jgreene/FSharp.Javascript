@@ -712,3 +712,11 @@ type QuotationsTests() =
         test <@ (fun x y -> 
                     let result = (x + y)
                     emit result)(1)(2) @>
+
+    [<Test>]
+    member this.``Equality test on union``() =
+        test <@ let item = One
+                if item = One then
+                    emit true
+                else
+                    emit false @>
