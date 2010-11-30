@@ -720,3 +720,15 @@ type QuotationsTests() =
                     emit true
                 else
                     emit false @>
+
+    [<Test>]
+    member this.``ref in closure updates properly``() =
+        test <@ let t = ref 40
+                let myFunction () =
+                    t := 10
+
+                let testFunction (x:unit -> unit) =
+                    x()
+
+                testFunction myFunction
+                emit !t @>

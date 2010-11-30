@@ -1898,11 +1898,13 @@ Microsoft.FSharp.Collections.FSharpList = {
 
         this.read = function () {
             if (this.ReadState == null)
-                this.ReadState = -1;
+                this.ReadState = this;
+            else
+                this.ReadState = this.ReadState.Tail
 
-            this.ReadState++;
-            if (this.ReadState >= this.Length) {
-                this.ReadState = null;
+            
+            if (this.ReadState.Length == 0) {
+                this.reset()
                 return false;
             }
 
@@ -1915,7 +1917,7 @@ Microsoft.FSharp.Collections.FSharpList = {
         }
 
         this.get = function () {
-            return this.get_Item(this.ReadState);
+            return this.ReadState.Head
         };
 
     }

@@ -3,55 +3,78 @@
 open FSharp.Javascript.Dom
 
 type browser() =
-    member this.webkit = false
-    member this.msie = false
-    member this.opera = false
-    member this.mozilla = false
-    member this.version = ""
+    [<DefaultValue>]
+    val mutable webkit : bool
+    [<DefaultValue>]
+    val mutable msie : bool
+    [<DefaultValue>]
+    val mutable opera : bool
+    [<DefaultValue>]
+    val mutable mozilla : bool
+    [<DefaultValue>]
+    val mutable version : string
 
 type event() =
-    member this.currentTarget = new System.Object()
-    member this.data = new System.Object()
+    [<DefaultValue>]
+    val mutable currentTarget : obj
+    [<DefaultValue>]
+    val mutable data : obj
+    [<DefaultValue>]
+    val mutable pageX : float
+    [<DefaultValue>]
+    val mutable pageY : float
+    [<DefaultValue>]
+    val mutable relatedTarget : HtmlElement
+    [<DefaultValue>]
+    val mutable result : obj
+    [<DefaultValue>]
+    val mutable target : HtmlElement
+    [<DefaultValue>]
+    val mutable timeStamp : obj
+    [<DefaultValue>]
+    val mutable ``type`` : obj
+    [<DefaultValue>]
+    val mutable which : obj
+    [<DefaultValue>]
+    val mutable keyCode : float
+
+
     member this.isDefaultPrevented() = true
     member this.isImmediatePropagationStopped() = true
     member this.isPropagationStopped() = true
-    member this.pageX
-        with get() = 1.0
-        and set(value) = ()
-    member this.pageY
-        with get() = 1.0
     member this.preventDefault() = ()
-    member this.relatedTarget
-        with get() = new HtmlElement()
-    member this.result
-        with get() = new System.Object()
     member this.stopImmediatePropagation() = ()
     member this.stopPropagation() = ()
-    member this.target
-        with get() = new HtmlElement()
-    member this.timeStamp
-        with get() = new System.Object()
-    member this.``type``
-        with get() = new System.Object()
-    member this.which
-        with get() = new System.Object()
 
 type position() =
-    member this.top = 0
-    member this.left = 0
+    [<DefaultValue>]
+    val mutable top : float
+    [<DefaultValue>]
+    val mutable left : float
 
 type support() =
-    member this.boxModel = true
-    member this.cssFloat = true
-    member this.hrefNormalized = true
-    member this.htmlSerialize = true
-    member this.leadingWhitespace = true
-    member this.noCloneEvent = true
-    member this.objectAll = true
-    member this.opacity = true
-    member this.scriptEval = true
-    member this.style = true
-    member this.tbody = true
+    [<DefaultValue>]
+    val mutable boxModel : bool
+    [<DefaultValue>]
+    val mutable cssFloat : bool
+    [<DefaultValue>]
+    val mutable hrefNormalized : bool
+    [<DefaultValue>]
+    val mutable htmlSerialize : bool
+    [<DefaultValue>]
+    val mutable leadingWhitespace : bool
+    [<DefaultValue>]
+    val mutable noCloneEvent : bool
+    [<DefaultValue>]
+    val mutable objectAll : bool
+    [<DefaultValue>]
+    val mutable opacity : bool
+    [<DefaultValue>]
+    val mutable scriptEval : bool
+    [<DefaultValue>]
+    val mutable style : bool
+    [<DefaultValue>]
+    val mutable tbody : bool
 
 
 type jquery(x:System.Object) =
@@ -126,7 +149,7 @@ type jquery(x:System.Object) =
     member this.focus(handler) = new jquery(null)
     member this.focusin(x) = new jquery(null)
     member this.focusout(x) = new jquery(null)
-    member this.get(x) = new jquery(null)
+    member this.get(x) = new HtmlElement()
     member this.has(x) = new jquery(null)
     member this.hasClass(x) = new jquery(null)
     member this.height() = new jquery(null)
@@ -146,14 +169,17 @@ type jquery(x:System.Object) =
     member this.insertBefore(x) = new jquery(null)
     member this.is(x) = true
     member this.keydown() = new jquery(null)
-    member this.keydown(x) = new jquery(null)
+    member this.keydown(x : event -> unit) = new jquery(null)
+    member this.keydown(x : event -> bool) = new jquery(null)
     member this.keypress() = new jquery(null)
-    member this.keypress(x) = new jquery(null)
+    member this.keypress(x : event -> unit) = new jquery(null)
+    member this.keypress(x : event -> bool) = new jquery(null)
     member this.keyup() = new jquery(null)
-    member this.keyup(x) = new jquery(null)
+    member this.keyup(x:event -> unit) = new jquery(null)
+    member this.keyup(x:event -> bool) = new jquery(null)
     member this.last() = new jquery(null)
-    member this.length
-        with get() = 0
+    [<DefaultValue>]
+    val mutable length : float
     member this.live(eventType, handler) = new jquery(null)
     member this.live(eventType,eventData,handler) = new jquery(null)
     member this.load(a) = new jquery(null)
@@ -228,8 +254,8 @@ type jquery(x:System.Object) =
     member this.scrollTop(x) = 0
     member this.select() = new jquery(null)
     member this.select(x) = new jquery(null)
-    member this.selector
-        with get() = ""
+    [<DefaultValue>]
+    val mutable selector : string
     member this.serialize() = ""
     member this.serializeArray() = [||]
     member this.show() = new jquery(null)
