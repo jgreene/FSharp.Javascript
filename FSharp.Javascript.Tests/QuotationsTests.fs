@@ -11,16 +11,10 @@ open FSharp.Javascript.Library
 type QuotationsTests() =
 
     [<Test>]
-    member this.``Dynamic lookup operator``() =
-        test <@ let t = { Prop1 = 1; Prop2 = "blah" }
-                let result = t?Prop1
-                emit result @>
-
-    [<Test>]
-    member this.``Dynamic set operator``() =
-        test <@ let t = new class2("blah", 2)
-                t?Age <- 5
-                emit (t?Age) @>
+    member this.``Dynamic operators``() =
+        test <@ let ob = JObject()
+                ob?Test <- 1
+                emit (ob?Test) @>
     
     [<Test>]
     member this.``Addition``() =

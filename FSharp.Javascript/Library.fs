@@ -3,7 +3,6 @@
 open System
 
 type System.DateTime with
-//    [<ReflectedDefinition>]
     static member TryParse2(x:string) =
         try
             let date = DateTime.Parse(x)
@@ -70,9 +69,15 @@ type System.Boolean with
         with
         | _ -> None
 
-let (?) (this : 'Source) (prop : string) : 'Result =
-          let p = this.GetType().GetProperty(prop)
-          p.GetValue(this, null) :?> 'Result
+type JObject() =
+    let dict = System.Collections.Hashtable()
 
-let (?<-) (this : 'Source) (property : string) (value : 'Value) =
-    this.GetType().GetProperty(property).SetValue(this, value, null)
+    member this.Item
+        with get(i:string) = dict.[i]
+        and set (i:string) (v:obj) = dict.[i] <- v
+
+let (?) (this : JObject) (prop : string) =
+    this.[prop]
+
+let (?<-) (this : JObject) (property : string) (value : 'Value) =
+    this.[property] <- value

@@ -121,6 +121,10 @@ FSharp.Javascript.Library = {
         }
     },
 
+    JObject : function(){
+
+    },
+
     op_Dynamic: function (obj) {
         return function (name) {
             return obj[name]
