@@ -1822,7 +1822,7 @@ Microsoft.FSharp.Collections.ArrayModule = {
 
     Zip: Microsoft.FSharp.Collections.SeqModule.Zip,
 
-    Zip3: Microsoft.FSharp.Collections.SeqModule.Zip3,
+    Zip3: Microsoft.FSharp.Collections.SeqModule.Zip3
 
 };
 

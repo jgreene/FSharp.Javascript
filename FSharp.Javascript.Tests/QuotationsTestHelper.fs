@@ -33,7 +33,7 @@ let getRandomFileName () = System.Guid.NewGuid().ToString() + ".js"
 let run (source:string) =
     
     let fileName = getRandomFileName ()
-    let filePath = "C:\\Users\\nephesh\\" + fileName
+    let filePath = "C:\\cygwin\\home\\nephesh\\" + fileName
     File.WriteAllText(filePath, source)
 
     let info = new ProcessStartInfo("C:\\cygwin\\bin\\bash", "--login -i -c \"node " + fileName + "\"")
@@ -46,7 +46,6 @@ let run (source:string) =
     
     let testResult = proc.StandardOutput.ReadLine()
     proc.WaitForExit()
-    
 
     File.Delete(filePath)
 
