@@ -68,6 +68,9 @@
     <Reference Include="FSharp.PowerPack.Linq">
       <HintPath>..\Dependencies\FSharp.PowerPack.Linq.dll</HintPath>
     </Reference>
+    <Reference Include="IronJS">
+      <HintPath>..\Dependencies\IronJS\IronJS.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
     <Reference Include="nunit.framework">

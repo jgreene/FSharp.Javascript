@@ -1345,8 +1345,8 @@ Microsoft.FSharp.Collections.ArrayModule = {
     Append: function (source1) {
         var self = this;
         return function (source2) {
-            var final = self.seq.Append(source1)(source2);
-            return self.seq.ToArray(final);
+            var result = self.seq.Append(source1)(source2);
+            return self.seq.ToArray(result);
         }
     },
 

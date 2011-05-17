@@ -22,11 +22,15 @@ open System.IO
 
 open System.Linq
 
+open IronJS
+
 let print input =
     System.Console.WriteLine((sprintf "%A" input))
 
 //[<ReflectedDefinition>]
 let emit x = x
+
+
 
 let getRandomFileName () = System.Guid.NewGuid().ToString() + ".js"
 
@@ -50,6 +54,15 @@ let run (source:string) =
     File.Delete(filePath)
 
     testResult
+
+//let run (source:string) =
+//    let emitter = new StringBuilder()
+//    let func x = emitter.Append(x.ToString()) |> ignore
+//    let ctx = IronJS.Hosting.FSharp.createContext()
+//    let env = ctx |> IronJS.Hosting.FSharp.env 
+//    let exitFunc = new System.Action(func) |> Native.Utils.createFunction env (Some(1))
+//    (IronJS.Hosting.FSharp.execute source ctx) |> ignore
+//    emitter.ToString()
 
 //type mydel = delegate of obj -> StringBuilder
 //
