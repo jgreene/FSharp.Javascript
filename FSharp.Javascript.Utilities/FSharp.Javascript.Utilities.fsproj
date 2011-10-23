@@ -35,7 +35,9 @@
     <Reference Include="Antlr3.Runtime">
       <HintPath>..\Dependencies\Antlr3.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Compiler.CodeDom, Version=1.9.9.9, Culture=neutral, PublicKeyToken=a19089b1c74d0809" />
+    <Reference Include="FSharp.Compiler.CodeDom">
+      <HintPath>..\Dependencies\FSharp.Compiler.CodeDom.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
     <Reference Include="System" />
